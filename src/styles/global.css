@@ -1,9 +1,16 @@
-@import "@fontsource/space-mono/400.css";
-@import "@fontsource/space-mono/700.css";
+@import "@fontsource/lekton/400.css";
+@import "@fontsource/lekton/700.css";
+
+
+@import "@fontsource/red-hat-mono/400.css";
+@import "@fontsource/red-hat-mono/700.css";
+
+@import "@fontsource/inconsolata/400.css";
+@import "@fontsource/inconsolata/700.css";
 @import "tailwindcss";
 @plugin '@tailwindcss/typography';
 
 @theme {
-  --font-sans: "Space Mono", monospace;
-  --font-mono: "Space Mono", monospace;
+  --font-sans: "Lekton", monospace;
+  --font-mono: "Inconsolata", monospace;
 }

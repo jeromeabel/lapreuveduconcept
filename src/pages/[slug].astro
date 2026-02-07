@@ -1,0 +1,42 @@
+---
+import { getCollection } from 'astro:content';
+import { Picture } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import ActionPanel from '../components/ActionPanel.astro';
+
+export async function getStaticPaths() {
+	const comics = await getCollection('comics');
+	return comics.map((comic) => ({
+		params: { slug: comic.id },
+		props: { comic },
+	}));
+}
+
+const { comic } = Astro.props;
+---
+
+<Layout
+	title={comic.data.title}
+	image={{ src: comic.data.cover.src, width: comic.data.cover.width, height: comic.data.cover.height }}
+	type="article"
+	publishedDate={comic.data.date}
+>
+	<article>
+		<div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+			{comic.data.pages.map((page, i) => (
+				<Picture
+					src={page}
+					formats={['avif', 'webp']}
+					alt={`${comic.data.alt} — page ${i + 1}`}
+					class="w-full h-auto"
+					loading={i === 0 ? 'eager' : 'lazy'}
+				/>
+			))}
+		</div>
+		<ActionPanel
+			date={comic.data.date}
+			slug={comic.id}
+			title={comic.data.title}
+		/>
+	</article>
+</Layout>

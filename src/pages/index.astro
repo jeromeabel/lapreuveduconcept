@@ -23,7 +23,7 @@ const latestComic = comics
 						src={page}
 						formats={['avif', 'webp']}
 						alt={`${latestComic.data.alt} — page ${i + 1}`}
-						class="w-full h-auto"
+						class="w-full h-auto border border-zinc-500"
 						loading={i === 0 ? 'eager' : 'lazy'}
 					/>
 				))}
