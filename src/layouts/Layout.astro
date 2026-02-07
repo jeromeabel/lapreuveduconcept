@@ -2,6 +2,18 @@
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import '../styles/global.css';
+
+interface Props {
+	title?: string;
+	description?: string;
+	ogImage?: string;
+}
+
+const {
+	title = 'Le concept de la preuve',
+	description = 'Bande dessinée par Jérôme Abel',
+	ogImage,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -12,7 +24,11 @@ import '../styles/global.css';
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Le concept de la preuve</title>
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		{ogImage && <meta property="og:image" content={ogImage} />}
 	</head>
 	<body class="min-h-screen bg-white text-zinc-900 font-sans">
 		<div class="mx-auto flex min-h-screen max-w-7xl flex-col px-4">
