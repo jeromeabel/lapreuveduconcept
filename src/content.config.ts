@@ -7,7 +7,8 @@ const comics = defineCollection({
 		z.object({
 			title: z.string(),
 			date: z.date(),
-			image: image(),
+			cover: image(),
+			pages: z.array(image()),
 			alt: z.string(),
 		}),
 });

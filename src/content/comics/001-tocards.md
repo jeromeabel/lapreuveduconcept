@@ -1,6 +1,9 @@
 ---
 title: "Tocards"
 date: 2026-02-07
-image: ../../assets/comics/001-tocards.png
+cover: ../../assets/comics/001-tocards/cover.png
+pages:
+  - ../../assets/comics/001-tocards/page-1.png
+  - ../../assets/comics/001-tocards/page-2.png
 alt: "Bande de tocards"
 ---
