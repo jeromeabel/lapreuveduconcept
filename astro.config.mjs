@@ -6,7 +6,6 @@ import netlify from '@astrojs/netlify';
 // https://astro.build/config
 export default defineConfig({
   integrations: [tailwind(), db()],
-  output: 'static',
   adapter: netlify({
     edgeMiddleware: false,
   }),

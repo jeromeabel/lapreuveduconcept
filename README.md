@@ -1,6 +1,6 @@
 # La Preuve du Concept
 
-A minimal French comics blog built with Astro 4, TypeScript, Tailwind CSS, and Astro DB (Turso).
+A minimal French comics blog built with Astro 5, TypeScript, Tailwind CSS, and Astro DB (Turso).
 
 ## Features
 
