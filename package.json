@@ -2,6 +2,7 @@
   "name": "lapreuveduconcept",
   "type": "module",
   "version": "0.0.1",
+  "repository": "https://github.com/jeromeabel/leconceptdelapreuve",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
