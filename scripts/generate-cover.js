@@ -233,7 +233,7 @@ async function main() {
   // Right column: stacked text
   const seriesLine = "Le concept de la preuve";
   const slugLine = `#${comicId}`;
-  const licenceLine = "Creative Commons CC0";
+  const licenceLine = "Creative Commons BY-NC";
 
   let textY = 0;
   const textLines = [];
