@@ -1,8 +1,20 @@
+---
+const { currentSlug } = Astro.props;
+---
+
 <header class="py-8 text-center">
-	<a
-		href="/"
-		class="text-xl tracking-wider text-zinc-900 hover:text-zinc-600 font-semibold"
-	>
-		Le concept de la preuve
-	</a>
+	<div class="flex flex-row items-center gap-2">
+		<a
+			href="/"
+			class="text-xl tracking-wider text-zinc-900 hover:text-zinc-600 font-semibold"
+		>
+			Le concept de la preuve
+		</a>
+		{currentSlug && (
+			<div class="text-neutral-500">
+				<span aria-hidden="true" class="mx-2">/</span>
+				<span>{currentSlug}</span>
+			</div>
+		)}
+	</div>
 </header>

@@ -8,6 +8,19 @@
   --font-mono: "Inconsolata", monospace;
 }
 
+.page-shell {
+  max-width: var(--page-max);
+  padding-left: var(--page-pad);
+  padding-right: var(--page-pad);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.comic-grid {
+  gap: var(--comic-gap);
+  margin-block: var(--comic-margin);
+}
+
 @keyframes fade-in {
   from { opacity: 0; filter: blur(10px); }
   to { opacity: 1; filter: blur(0); }

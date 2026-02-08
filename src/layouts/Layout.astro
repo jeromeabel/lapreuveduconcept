@@ -3,6 +3,7 @@ import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import SEO from '../components/SEO.astro';
 import '../styles/global.css';
+import { layoutTokens } from '../utils/layoutTokens';
 
 export interface Props {
 	title?: string;
@@ -10,9 +11,11 @@ export interface Props {
 	image?: { src: string; width?: number; height?: number };
 	type?: 'website' | 'article';
 	publishedDate?: Date;
+	currentSlug?: string;
 }
 
-const { title, description, image, type, publishedDate } = Astro.props;
+const { title, description, image, type, publishedDate, currentSlug } = Astro.props;
+const layoutStyle = `--page-max: ${layoutTokens.pageMaxRem}rem; --page-pad: ${layoutTokens.pagePadRem}rem; --comic-gap: ${layoutTokens.comicGapRem}rem; --comic-margin: ${layoutTokens.comicMarginRem}rem;`;
 ---
 
 <!doctype html>
@@ -27,8 +30,8 @@ const { title, description, image, type, publishedDate } = Astro.props;
 		/>
 	</head>
 	<body class="min-h-screen bg-white text-zinc-900 font-sans">
-		<div class="mx-auto flex min-h-screen max-w-7xl flex-col px-4">
-			<Header />
+		<div class="page-shell flex min-h-screen flex-col" style={layoutStyle}>
+			<Header currentSlug={currentSlug} />
 			<main class="flex-1">
 				<slot />
 			</main>

@@ -1,6 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import { layoutTokens } from '../utils/layoutTokens';
 
 interface Props {
 	src: ImageMetadata;
@@ -11,13 +12,24 @@ interface Props {
 
 const { src, alt, index, class: className } = Astro.props;
 const isFirst = index === 0;
+const { remBase, pageMaxRem, pagePadRem, comicGapRem } = layoutTokens;
+const pageMaxPx = pageMaxRem * remBase;
+const pagePadPx = pagePadRem * remBase;
+const comicGapPx = comicGapRem * remBase;
+const oneColMax = pageMaxPx - pagePadPx * 2;
+const twoColMax = (pageMaxPx - pagePadPx * 2 - comicGapPx) / 2;
+const maxWidth = src.width ?? oneColMax;
+const widths = [360, 480, Math.round(twoColMax), Math.round(oneColMax)]
+	.filter((width) => width <= maxWidth)
+	.filter((width, i, list) => list.indexOf(width) === i)
+	.sort((a, b) => a - b);
 ---
 
 <Picture
 	src={src}
 	formats={['avif', 'webp']}
-	widths={[480, 620, 665, 900, 1240]}
-	sizes="(min-width: 768px) 620px, 100vw"
+	widths={widths}
+	sizes="(min-width: 768px) calc((min(100vw, var(--page-max)) - (var(--page-pad) * 2) - var(--comic-gap)) / 2), 100vw"
 	alt={alt}
 	loading={isFirst ? 'eager' : 'lazy'}
 	fetchpriority={isFirst ? 'high' : undefined}
