@@ -29,8 +29,8 @@ width={1280}
 Update page resize config from 640w → **1280w**:
 
 ```js
-"001/jeromeabel-cc0-leconceptdelapreuve-001-p1.png": { width: 1280, quality: 85, category: "page" },
-"001/jeromeabel-cc0-leconceptdelapreuve-001-p2.png": { width: 1280, quality: 85, category: "page" },
+"001/jeromeabel-creativecommons-by-nc-leconceptdelapreuve-001-p1.png": { width: 1280, quality: 85, category: "page" },
+"001/jeromeabel-creativecommons-by-nc-leconceptdelapreuve-001-p2.png": { width: 1280, quality: 85, category: "page" },
 ```
 
 ### 3. `specs/003-image-optimization/plan.md`

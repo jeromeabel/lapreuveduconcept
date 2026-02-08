@@ -11,7 +11,7 @@ pnpm generate-cover 001
 ```
 
 Reads page images from `src/assets/comics/{id}/`, composites them into a cover, writes to:
-`src/assets/comics/{id}/jeromeabel-cc0-leconceptdelapreuve-{id}-cover.png`
+`src/assets/comics/{id}/jeromeabel-creativecommons-by-nc-leconceptdelapreuve-{id}-cover.png`
 
 ## Layout
 

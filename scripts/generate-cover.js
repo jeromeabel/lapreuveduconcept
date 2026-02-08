@@ -264,7 +264,7 @@ async function main() {
   const outputPath = join(
     COMICS_ASSETS,
     comicId,
-    `jeromeabel-cc0-leconceptdelapreuve-${comicId}-cover.png`
+    `jeromeabel-creativecommons-by-nc-leconceptdelapreuve-${comicId}-cover.png`
   );
 
   await sharp({
