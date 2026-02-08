@@ -8,6 +8,8 @@
 pnpm dev       # Start dev server
 pnpm build     # Production build
 pnpm preview   # Preview production build
+pnpm optimize-images <comicId>  # Generate optimized images for a comic
+pnpm generate-cover <comicId>   # Generate cover image for a comic
 ```
 
 ## Tech Stack
@@ -30,6 +32,7 @@ pnpm preview   # Preview production build
 - Prefer Astro integrations and Vite plugins over manual configuration
 - Static rendering by default — only opt into SSR for dynamic endpoints
 - Tailwind CSS v4 is a Vite plugin, NOT an Astro integration
+- Layout sizing tokens live in `src/utils/layoutTokens.ts` and are applied as CSS variables in the layout
 
 ## Specs (`specs/`)
 

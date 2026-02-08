@@ -19,7 +19,7 @@ const comicGapPx = comicGapRem * remBase;
 const oneColMax = pageMaxPx - pagePadPx * 2;
 const twoColMax = (pageMaxPx - pagePadPx * 2 - comicGapPx) / 2;
 const maxWidth = src.width ?? oneColMax;
-const widths = [360, 480, Math.round(twoColMax), Math.round(oneColMax)]
+const widths = [360, 480, Math.round(twoColMax), Math.round(oneColMax), Math.round(maxWidth)]
 	.filter((width) => width <= maxWidth)
 	.filter((width, i, list) => list.indexOf(width) === i)
 	.sort((a, b) => a - b);

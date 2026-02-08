@@ -44,6 +44,15 @@ The build script sets `ASTRO_DATABASE_FILE` automatically for local builds. For 
 pnpm preview
 ```
 
+### Image Scripts
+
+```bash
+pnpm optimize-images <comicId>
+pnpm generate-cover <comicId>
+```
+
+Use these scripts to prepare optimized panel assets and the cover image for a comic.
+
 ## Project Structure
 
 ```
@@ -84,6 +93,14 @@ Comics are defined as markdown files in `src/data/comics/` with frontmatter (tit
 
 - **Static pages** (default): landing page and comic detail pages are prerendered at build time
 - **Server endpoint**: `/api/vote` runs on-demand via Netlify Functions
+
+### Layout Tokens
+
+Layout sizing values live in `src/utils/layoutTokens.ts` and are applied as CSS variables in the layout. These tokens drive:
+
+- The container width and padding
+- The comic grid gap and margin
+- The responsive image `sizes` math and the static `widths` list
 
 ## Environment Variables
 

@@ -8,6 +8,7 @@
   --font-mono: "Inconsolata", monospace;
 }
 
+
 .page-shell {
   max-width: var(--page-max);
   padding-left: var(--page-pad);
@@ -17,6 +18,7 @@
 }
 
 .comic-grid {
+  /* Column width derives from layout tokens; keep it an integer pixel to avoid blur. */
   gap: var(--comic-gap);
   margin-block: var(--comic-margin);
 }
