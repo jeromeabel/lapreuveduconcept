@@ -5,6 +5,8 @@ import netlify from '@astrojs/netlify';
 
 import icon from 'astro-icon';
 
+import partytown from '@astrojs/partytown';
+
 export default defineConfig({
   site: 'https://leconceptdelapreuve.jeromeabel.net',
 
@@ -18,5 +20,5 @@ export default defineConfig({
   },
 
   adapter: netlify(),
-  integrations: [icon()]
+  integrations: [icon(), partytown()]
 });

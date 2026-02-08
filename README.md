@@ -1,6 +1,6 @@
 # Le concept de la preuve
 
-A minimal French comic blog featuring two-panel tech comics with speech bubbles and an ironic tone. Built with Astro, Tailwind CSS, and deployed on Netlify.
+A minimal French comic blog
 
 ## Tech Stack
 
