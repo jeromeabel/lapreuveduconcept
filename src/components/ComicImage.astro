@@ -16,8 +16,8 @@ const isFirst = index === 0;
 <Picture
 	src={src}
 	formats={['avif', 'webp']}
-	widths={[620, 1240, 1280]}
-	sizes="(min-width: 768px) 620px, calc(100vw - 2rem)"
+	widths={[480, 620, 665, 900, 1240]}
+	sizes="(min-width: 768px) 620px, 100vw"
 	alt={alt}
 	loading={isFirst ? 'eager' : 'lazy'}
 	fetchpriority={isFirst ? 'high' : undefined}
