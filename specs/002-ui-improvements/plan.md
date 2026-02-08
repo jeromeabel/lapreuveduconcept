@@ -188,10 +188,10 @@ const formattedDate = date.toLocaleDateString('fr-FR', {
 const permalink = new URL(`/comics/${slug}`, Astro.site).href;
 ---
 
-<div class="flex flex-wrap items-center gap-4 py-4 text-sm text-zinc-500">
+<div class="flex flex-wrap items-center gap-4 py-4 text-sm text-zinc-600">
 	<time datetime={date.toISOString()}>{formattedDate}</time>
 
-	<span class="text-zinc-300">|</span>
+	<span class="text-zinc-500">|</span>
 
 	<!-- Share: Web Share API with social links fallback -->
 	<share-button class="contents" data-title={title} data-url={permalink}>
@@ -218,7 +218,7 @@ const permalink = new URL(`/comics/${slug}`, Astro.site).href;
 		</span>
 	</share-button>
 
-	<span class="text-zinc-300">|</span>
+	<span class="text-zinc-500">|</span>
 
 	<a href={`/comics/${slug}`} class="hover:text-zinc-900">Permalien</a>
 </div>
@@ -301,7 +301,7 @@ const latestComic = comics
 			/>
 		</article>
 	) : (
-		<p class="text-zinc-500">Aucune bande dessinée pour le moment.</p>
+		<p class="text-zinc-600">Aucune bande dessinée pour le moment.</p>
 	)}
 </Layout>
 ```

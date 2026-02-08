@@ -48,5 +48,5 @@ a:focus-visible {
 }
 
 .animate-fade-in {
-  animation: fade-in 400ms ease-out;
+  animation: fade-in 330ms ease-out;
 }

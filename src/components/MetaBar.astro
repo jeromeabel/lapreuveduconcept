@@ -28,10 +28,10 @@ const shareLinks = [
 ];
 ---
 
-<div class="flex flex-wrap items-center gap-4 py-4 text-sm text-zinc-500">
+<div class="flex flex-wrap items-center gap-4 py-4 text-sm text-zinc-600">
 	<time datetime={date.toISOString()}>{formattedDate}</time>
 
-	<span class="text-zinc-300" aria-hidden="true">|</span>
+	<span class="text-zinc-500" aria-hidden="true">|</span>
 
 	<share-button class="contents">
 		<div class="flex flex-wrap items-center gap-3" role="group" aria-label="Partager">
@@ -41,7 +41,7 @@ const shareLinks = [
 					target={popup ? '_blank' : undefined}
 					rel={popup ? 'noopener noreferrer' : undefined}
 					aria-label={label}
-					class="share-link no-underline hidden md:inline-flex items-center justify-center p-2 text-zinc-500 hover:text-zinc-900 transition-colors"
+					class="share-link no-underline hidden md:inline-flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors"
 					data-popup={popup ? 'true' : undefined}
 				>
 					<Icon name={icon} class="size-4" aria-hidden="true" />
@@ -50,7 +50,7 @@ const shareLinks = [
 
 			<button
 				type="button"
-				class="js-native-share inline-flex md:hidden items-center justify-center p-2 text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+				class="js-native-share inline-flex md:hidden items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors cursor-pointer"
 				aria-label="Partager"
 				data-url={permalink}
 				data-title={title}
@@ -61,7 +61,7 @@ const shareLinks = [
 			<!-- Copy link button (JS-enhanced) -->
 			<button
 				type="button"
-				class="js-copy-link inline-flex items-center justify-center p-2 text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+				class="js-copy-link inline-flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors cursor-pointer"
 				aria-label="Copier le lien"
 				data-url={permalink}
 			>
@@ -77,7 +77,7 @@ const shareLinks = [
 
 	<a
 		href={`/${slug}`}
-		class="no-underline inline-flex items-center justify-center p-2 text-zinc-500 hover:text-zinc-900 transition-colors"
+		class="no-underline inline-flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors"
 		aria-label="Permalien"
 	>
 		<Icon name="carbon:link" class="size-4" aria-hidden="true" />

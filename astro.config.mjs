@@ -20,5 +20,5 @@ export default defineConfig({
   },
 
   adapter: netlify(),
-  integrations: [icon(), partytown()]
+  integrations: [icon(), partytown({ config: { debug: false } })]
 });
