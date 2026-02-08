@@ -17,7 +17,7 @@ const latestComic = comics
 >
 	{latestComic ? (
 		<article>
-			<div class="comic-grid grid grid-cols-1 md:grid-cols-2">
+			<div class="comic-grid grid grid-cols-1 md:grid-cols-2 gap-2">
 				{latestComic.data.pages.map((page, i) => (
 					<ComicImage
 						src={page}

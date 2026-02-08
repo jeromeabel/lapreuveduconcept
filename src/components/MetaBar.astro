@@ -41,12 +41,22 @@ const shareLinks = [
 					target={popup ? '_blank' : undefined}
 					rel={popup ? 'noopener noreferrer' : undefined}
 					aria-label={label}
-					class="share-link no-underline inline-flex items-center justify-center p-2 text-zinc-500 hover:text-zinc-900 transition-colors"
+					class="share-link no-underline hidden md:inline-flex items-center justify-center p-2 text-zinc-500 hover:text-zinc-900 transition-colors"
 					data-popup={popup ? 'true' : undefined}
 				>
 					<Icon name={icon} class="size-4" aria-hidden="true" />
 				</a>
 			))}
+
+			<button
+				type="button"
+				class="js-native-share inline-flex md:hidden items-center justify-center p-2 text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+				aria-label="Partager"
+				data-url={permalink}
+				data-title={title}
+			>
+				<Icon name="carbon:share" class="size-4" aria-hidden="true" />
+			</button>
 
 			<!-- Copy link button (JS-enhanced) -->
 			<button
@@ -78,6 +88,7 @@ const shareLinks = [
 	class ShareButton extends HTMLElement {
 		connectedCallback() {
 			this.setupCopyLink();
+			this.setupNativeShare();
 			this.setupPopupLinks();
 		}
 
@@ -87,6 +98,31 @@ const shareLinks = [
 					e.preventDefault();
 					window.open(link.href, '_blank', 'width=600,height=500,noopener,noreferrer');
 				});
+			});
+		}
+
+		private setupNativeShare() {
+			const btn = this.querySelector('.js-native-share') as HTMLButtonElement;
+			if (!btn) return;
+
+			if (!navigator.share) {
+				btn.classList.add('hidden');
+				return;
+			}
+
+			btn.addEventListener('click', async () => {
+				const url = btn.dataset.url;
+				const shareTitle = btn.dataset.title;
+				if (!url) return;
+
+				try {
+					await navigator.share({
+						title: shareTitle || document.title,
+						url,
+					});
+				} catch (error) {
+					if (error instanceof DOMException && error.name === 'AbortError') return;
+				}
 			});
 		}
 
@@ -101,15 +137,8 @@ const shareLinks = [
 				try {
 					await navigator.clipboard.writeText(url);
 				} catch {
-					// Fallback for insecure contexts
-					const textarea = document.createElement('textarea');
-					textarea.value = url;
-					textarea.style.position = 'fixed';
-					textarea.style.opacity = '0';
-					document.body.appendChild(textarea);
-					textarea.select();
-					document.execCommand('copy');
-					document.body.removeChild(textarea);
+					// Fallback for insecure contexts where clipboard access is blocked
+					window.prompt('Copiez le lien :', url);
 				}
 
 				const copyIcon = btn.querySelector('.js-copy-icon') as HTMLElement;
