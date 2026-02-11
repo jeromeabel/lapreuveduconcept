@@ -10,6 +10,10 @@ import partytown from '@astrojs/partytown';
 export default defineConfig({
   site: 'https://leconceptdelapreuve.jeromeabel.net',
 
+  build: {
+    inlineStylesheets: 'always',
+  },
+
   vite: {
     plugins: [tailwindcss()],
     resolve: {

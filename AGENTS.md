@@ -8,8 +8,8 @@
 pnpm dev       # Start dev server
 pnpm build     # Production build
 pnpm preview   # Preview production build
-pnpm optimize-images <comicId>  # Generate optimized images for a comic
-pnpm generate-cover <comicId>   # Generate cover image for a comic
+pnpm optimize <comicId>  # Generate optimized images for a comic
+pnpm cover <comicId>   # Generate cover image for a comic
 ```
 
 ## Tech Stack
