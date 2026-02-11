@@ -43,6 +43,8 @@ const shareLinks = [
 					aria-label={label}
 					class="meta-link no-underline hidden md:inline-flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors"
 					data-popup={popup ? 'true' : undefined}
+					data-umami-event="share-bluesky"
+					data-umami-event-comic={slug}
 				>
 					<Icon name={icon} class="size-4" aria-hidden="true" />
 				</a>
@@ -54,6 +56,8 @@ const shareLinks = [
 				aria-label="Partager"
 				data-url={permalink}
 				data-title={title}
+				data-umami-event="share-native"
+				data-umami-event-comic={slug}
 			>
 				<Icon name="carbon:share" class="size-4" aria-hidden="true" />
 			</button>
@@ -64,6 +68,8 @@ const shareLinks = [
 				class="js-copy-link inline-flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors cursor-pointer"
 				aria-label="Copier le lien"
 				data-url={permalink}
+				data-umami-event="copy-link"
+				data-umami-event-comic={slug}
 			>
 				<span class="js-copy-icon">
 					<Icon name="carbon:copy" class="size-4" aria-hidden="true" />
@@ -81,6 +87,8 @@ const shareLinks = [
 		href={`/${slug}`}
 		class="no-underline inline-flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors"
 		aria-label="Permalien"
+		data-umami-event="click-permalink"
+		data-umami-event-comic={slug}
 	>
 		<Icon name="carbon:link" class="size-4" aria-hidden="true" />
 	</a>
