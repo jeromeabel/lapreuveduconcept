@@ -1,0 +1,21 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+	href: string;
+	label?: string;
+}
+
+const { href, label = 'Next comic' } = Astro.props;
+---
+
+<div class="flex items-center justify-center py-4 lg:py-6">
+	<a
+		href={href}
+		class="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.35em] text-zinc-400 transition hover:text-zinc-900"
+		aria-label={label}>
+		<span class="inline-flex p-2 items-center justify-center rounded-full group-hover:bg-zinc-100 transition">
+			<Icon name="carbon:arrow-down" class="size-6" aria-hidden="true" />
+		</span>
+	</a>
+</div>

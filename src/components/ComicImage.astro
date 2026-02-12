@@ -6,23 +6,43 @@ import { layoutTokens } from '../utils/layoutTokens';
 interface Props {
 	src: ImageMetadata;
 	alt: string;
-	index: number;
+	eager?: boolean;
 	class?: string;
 }
 
-const { src, alt, index, class: className } = Astro.props;
-const isFirst = index === 0;
-const { remBase, pageMaxRem, pagePadRem, comicGapRem } = layoutTokens;
+const {
+	src,
+	alt,
+	eager = false,
+	class: className,
+} = Astro.props;
+const {
+	remBase, pageMaxRem, pagePadRem, comicGapRem,
+	cardPadMobileRem, cardPadDesktopRem, cardBorderPx,
+} = layoutTokens;
 const pageMaxPx = pageMaxRem * remBase;
 const pagePadPx = pagePadRem * remBase;
 const comicGapPx = comicGapRem * remBase;
-const oneColMax = pageMaxPx - pagePadPx * 2;
-const twoColMax = (pageMaxPx - pagePadPx * 2 - comicGapPx) / 2;
+const cardPadMobilePx = cardPadMobileRem * remBase;
+const cardPadDesktopPx = cardPadDesktopRem * remBase;
+
+// Total horizontal chrome (padding + border) the card adds around the image area.
+const mobileChromePx = pagePadPx * 2 + cardPadMobilePx * 2 + cardBorderPx * 2;
+const desktopChromePx = pagePadPx * 2 + cardPadDesktopPx * 2 + cardBorderPx * 2;
+
+const oneColMax = pageMaxPx - desktopChromePx;
+const twoColMax = (pageMaxPx - desktopChromePx - comicGapPx) / 2;
 const maxWidth = src.width ?? oneColMax;
 const widths = [360, 480, Math.round(twoColMax), Math.round(oneColMax)]
 	.filter((width) => width <= maxWidth)
 	.filter((width, i, list) => list.indexOf(width) === i)
 	.sort((a, b) => a - b);
+
+// Pixel-based sizes string — avoids reliance on var() support in sizes attribute.
+const sizesAttr = [
+	`(min-width: 768px) calc((min(100vw, ${pageMaxPx}px) - ${desktopChromePx + comicGapPx}px) / 2)`,
+	`calc(100vw - ${mobileChromePx}px)`,
+].join(', ');
 ---
 
 <div class="reveal-img">
@@ -30,10 +50,10 @@ const widths = [360, 480, Math.round(twoColMax), Math.round(oneColMax)]
 		src={src}
 		formats={['avif', 'webp']}
 		widths={widths}
-		sizes="(min-width: 768px) calc((min(100vw, var(--page-max)) - (var(--page-pad) * 2) - var(--comic-gap)) / 2), 100vw"
+		sizes={sizesAttr}
 		alt={alt}
-		loading={isFirst ? 'eager' : 'lazy'}
-		fetchpriority={isFirst ? 'high' : undefined}
+		loading={eager ? "eager" : "lazy"}
+		fetchpriority={eager ? "high" : undefined}
 		class:list={['w-full h-auto outline outline-zinc-600', className]}
 	/>
 </div>

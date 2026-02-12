@@ -24,13 +24,13 @@ const pageTitle = ` ${comic.id} - ${siteName}`;
 	publishedDate={comic.data.date}
 	currentSlug={comic.id}
 >
-	<article class="space-y-4">
-		<div class="comic-grid grid grid-cols-1 md:grid-cols-2">
+	<article class="space-y-6">
+		<div class="comic-grid grid grid-cols-1 md:grid-cols-2 border border-zinc-300 p-6 md:p-12">
 			{comic.data.pages.map((page, i) => (
 				<ComicImage
 					src={page}
 					alt={`${comic.data.alt} — page ${i + 1}`}
-					index={i}
+					eager
 				/>
 			))}
 		</div>

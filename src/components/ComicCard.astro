@@ -5,18 +5,20 @@ import ComicImage from './ComicImage.astro';
 
 interface Props {
 	comic: CollectionEntry<'comics'>;
+	eager?: boolean;
 }
 
-const { comic } = Astro.props;
+const { comic, eager = false } = Astro.props;
 ---
 
-<article class="px-6 pt-6 pb-2 md:px-12 md:pt-12 md:pb-6 border border-zinc-300">
+<!-- px-8 / md:px-12 / border must match layoutTokens cardPad*Rem and cardBorderPx -->
+<article class="px-8 pt-8 pb-2 md:px-12 md:pt-12 md:pb-8 border border-zinc-300">
 	<div class="comic-grid grid grid-cols-1 md:grid-cols-2">
 		{comic.data.pages.map((page, i) => (
 			<ComicImage
 				src={page}
 				alt={`${comic.data.alt} — page ${i + 1}`}
-				index={i}
+				eager={eager}
 			/>
 		))}
 	</div>
