@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "optimize": "node scripts/optimize-images.js",
-    "cover": "node scripts/generate-cover.js"
+    "cover": "node scripts/generate-cover.js",
+    "new": "node scripts/new-comic.js"
   },
   "dependencies": {
     "@astrojs/netlify": "^6.6.4",
