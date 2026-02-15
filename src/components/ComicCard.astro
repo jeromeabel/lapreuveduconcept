@@ -12,7 +12,7 @@ const { comic, eager = false } = Astro.props;
 ---
 
 <!-- px-8 / md:px-12 / border must match layoutTokens cardPad*Rem and cardBorderPx -->
-<article class="px-6 pt-6 pb-1 md:px-12 md:pt-12 md:pb-8 border border-zinc-300 shadow-lg">
+<article class="px-6 pt-6 pb-1 md:px-12 md:pt-12 md:pb-8 border border-zinc-400 shadow-lg">
 	<div class="comic-grid grid grid-cols-1 md:grid-cols-2">
 		{comic.data.pages.map((page, i) => (
 			<ComicImage
