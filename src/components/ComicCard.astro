@@ -3,7 +3,6 @@ import type { CollectionEntry } from 'astro:content';
 import ComicImage from './ComicImage.astro';
 import VoteButton from './VoteButton.astro';
 import ShareActions from './ShareActions.astro';
-import { Icon } from 'astro-icon/components';
 
 interface Props {
 	comic: CollectionEntry<'comics'>;
@@ -33,14 +32,20 @@ const formattedDate = comic.data.date.toLocaleDateString('fr-FR', {
 		</div>
 	</article>
 
-	<!-- Label strip: below the paper, outside the shadow -->
-	<div class="flex items-center gap-x-3 pt-2 md:pt-3 text-sm text-zinc-800">
-		<a href={`/${comic.id}`} class="no-underline hover:text-zinc-400 text-zinc-800">
-		<span class=" shrink-0 tabular-nums font-bold">{comic.id}</span>
-		<span class="text-zinc-300" aria-hidden="true">·</span>
-		<span class="min-w-0 truncate">{comic.data.title}</span></a>
-		<span class="text-zinc-300" aria-hidden="true">·</span>
-		<time datetime={comic.data.date.toISOString()} class="text-zinc-400 shrink-0">{formattedDate}</time>
+	<!-- Label strip: below the paper -->
+	<div class="flex items-center gap-x-3 pt-2 md:pt-3 text-sm">
+		<a
+			href={`/${comic.id}`}
+			class="no-underline hover:underline min-w-0 inline-flex items-baseline gap-x-2 text-zinc-500 hover:text-zinc-900 transition-colors duration-150"
+			data-umami-event="click-permalink"
+			data-umami-event-comic={comic.id}
+		>
+			<span class="font-semibold tabular-nums shrink-0">{comic.id}</span>
+			<span class="text-zinc-300 shrink-0" aria-hidden="true">·</span>
+			<span class="min-w-0 truncate">{comic.data.title}</span>
+		</a>
+		<span class="text-zinc-300 shrink-0" aria-hidden="true">·</span>
+		<time datetime={comic.data.date.toISOString()} class="text-zinc-500 shrink-0">{formattedDate}</time>
 		<div class="ml-auto flex items-center shrink-0 gap-3">
 			<VoteButton slug={comic.id} />
 			<ShareActions slug={comic.id} title={comic.data.title} />
