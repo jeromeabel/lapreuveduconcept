@@ -157,10 +157,75 @@ button.classList.toggle('voted', newVoted); // second argument = force true/fals
 ```
 
 ### Step 9 — Optimistic UI
-<!-- What did you learn? -->
+
+**Network error vs HTTP error**
+- A **network error** means no response arrived: browser offline, DNS failure,
+  server unreachable, CORS rejected. `fetch` *throws* in these cases → `catch` runs.
+- An **HTTP error** (404, 500…) means the server *did* respond, just with a bad
+  status. `fetch` does **not** throw — it returns a `Response` with `ok === false`.
+  If you don't check it, the error is silently swallowed.
+- `fetchJson` in `vote.ts` bridges the gap: it reads `!response.ok` and throws
+  manually, so both failure kinds land in the same `catch` block.
+
+```ts
+if (!response.ok) {
+  const errData = await response.json().catch(() => ({})); 
+  throw new Error(errData.error ?? `HTTP ${response.status}`); // .json errors will be catched or fallback with HTTP status
+} 
+```
+
+**Optimistic UI**
+- On click: save `prev`, compute `optimistic`, call `updateButtonUI` immediately.
+  The user sees feedback before the POST leaves the browser → good UX.
+- Trade-off: the UI can briefly show a state that the server later rejects.
+  That's acceptable here because votes are low-stakes and rollback is instant.
+- When the server responds, `updateButtonUI` is called again with the *real* count
+  (reconciliation). The server is the source of truth; the optimistic guess might
+  be wrong (e.g. race condition where two clients vote simultaneously).
+
+**Rollback — the two saved values**
+- `prev = state.get(comicId)` saves both `{ count, voted }` before the optimistic update. Count alone isn't enough: restoring only the number leaves the button color (text-green-500 = voted state) out of sync with reality.
+
+**Pending**
+- Guards against a click arriving while a POST is already in flight — most commonly a rapid double-click.
+- Without it, the second click would save the already-optimistic state as `prev`, fire a second POST, and rollback would restore the wrong state on failure.
+- `button.disabled` would also block double-clicks, but it requires re-enabling in both success and error paths. With the `Set`, `finally` is the single cleanup path and the button stays visually enabled throughout (no grey flicker).
+
+```ts
+if (pending.has(comicId)) return;   // second click while in-flight → ignored
+pending.add(comicId);
+// ... POST ...
+finally { pending.delete(comicId); } // clears in all outcomes
+```
+
+**Debounce**?
+- Debounce shines for inputs where you want to avoid firing on every keystroke — search fields, resize handlers, form validation. For a button action where you want the first click to feel immediate, pending is the right tool.
+- You could technically combine both, but it would be over-engineering for a vote button: pending already covers the only real risk (concurrent requests), with zero UX cost.
+
+**State in JS vs state in DOM**
+- `span.textContent` is always a string → `parseInt()` required for math, and
+  TypeScript can't help if it fails. The `Map<string, VoteState>` is typed.
+- DOM is the *display* layer, not the *data* layer. Coupling logic to the rendered
+  HTML means a markup change silently breaks your JS.
+- The `Map` lives in the shared closure of `initVote`, accessible to both the GET
+  hydration and `handleVote` POST handler. Rollback is just
+  `state.set(comicId, prev)` — no DOM query needed to know the previous state.
+
 
 ### Step 10 — Production deploy
-<!-- What did you learn? -->
+
+
+--remote switches the target from your local SQLite file to the hosted Turso database.                                        
+                                                                                                                                             
+  This matters in two places:                                                                                                                  
+                                                                                                                                               
+  astro db push --remote   # schema: create/update tables on the remote DB                                                                     
+  astro build --remote     # build: let the built app talk to the remote DB                                                                    
+
+  Without --remote on the build, the compiled server functions would look for a local file that doesn't exist on Netlify's servers — every API
+  call would crash.
+
+
 
 ---
 

@@ -33,7 +33,13 @@ const shareLinks = [
 
 	<span class="text-zinc-300" aria-hidden="true">|</span>
 
-	<button disabled data-comic-id={slug}>♥ <span>—</span></button>
+	<button
+		disabled
+		type="button"
+		aria-pressed="false"
+		data-comic-id={slug}
+		class="aria-pressed:text-green-500 data-pending:opacity-50 data-pending:cursor-wait data-pending:pointer-events-none"
+	>♥ <span>—</span></button>
 
 	<span class="text-zinc-300" aria-hidden="true">|</span>
 
