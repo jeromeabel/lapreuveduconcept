@@ -20,7 +20,7 @@ const sortedComics = comics.sort((a, b) => b.data.date.valueOf() - a.data.date.v
 					<div
 						id={currentId}
 						class:list={[
-							'scroll-mt-4 transition-opacity duration-1000 ease-out',
+							'scroll-mt-6 md:scroll-mt-12 transition-opacity duration-1000 ease-out',
 							index === 0 ? 'opacity-100' : 'opacity-10',
 						]}
 						data-reveal={index > 0 ? '' : undefined}

@@ -21,7 +21,7 @@ const formattedDate = comic.data.date.toLocaleDateString('fr-FR', {
 <div>
 	<!-- Paper: images only, no chrome inside -->
 	<!-- px-6 / md:px-12 / border must match layoutTokens cardPad*Rem and cardBorderPx -->
-	<article class="px-6 py-6 md:px-12 md:py-8 border border-zinc-300 shadow-lg">
+	<article class="p-6 md:p-12 border border-zinc-300 shadow-lg">
 		<div class="comic-grid grid grid-cols-1 md:grid-cols-2">
 			{comic.data.pages.map((page, i) => (
 				<ComicImage
@@ -34,23 +34,16 @@ const formattedDate = comic.data.date.toLocaleDateString('fr-FR', {
 	</article>
 
 	<!-- Label strip: below the paper, outside the shadow -->
-	<div class="flex items-center gap-x-3 pt-2 md:pt-3 text-sm text-zinc-500">
-		<span class="text-zinc-800 shrink-0">{comic.id}</span>
+	<div class="flex items-center gap-x-3 pt-2 md:pt-3 text-sm text-zinc-800">
+		<a href={`/${comic.id}`} class="no-underline hover:text-zinc-400 text-zinc-800">
+		<span class=" shrink-0 tabular-nums font-bold">{comic.id}</span>
 		<span class="text-zinc-300" aria-hidden="true">·</span>
-		<span class="min-w-0 truncate">{comic.data.title}</span>
+		<span class="min-w-0 truncate">{comic.data.title}</span></a>
+		<span class="text-zinc-300" aria-hidden="true">·</span>
 		<time datetime={comic.data.date.toISOString()} class="text-zinc-400 shrink-0">{formattedDate}</time>
-		<div class="ml-auto flex items-center shrink-0">
+		<div class="ml-auto flex items-center shrink-0 gap-3">
 			<VoteButton slug={comic.id} />
 			<ShareActions slug={comic.id} title={comic.data.title} />
-			<a
-				href={`/${comic.id}`}
-				class="no-underline inline-flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors"
-				aria-label="Permalien"
-				data-umami-event="click-permalink"
-				data-umami-event-comic={comic.id}
-			>
-				<Icon name="carbon:link" class="size-4" aria-hidden="true" />
-			</a>
 		</div>
 	</div>
 </div>
