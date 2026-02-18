@@ -5,6 +5,8 @@ import netlify from '@astrojs/netlify';
 
 import icon from 'astro-icon';
 
+import db from '@astrojs/db';
+
 export default defineConfig({
   site: 'https://leconceptdelapreuve.jeromeabel.net',
 
@@ -22,5 +24,5 @@ export default defineConfig({
   },
 
   adapter: netlify(),
-  integrations: [icon()]
+  integrations: [icon(), db()]
 });

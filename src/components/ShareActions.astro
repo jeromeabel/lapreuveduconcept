@@ -1,0 +1,141 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+	slug: string;
+	title: string;
+	url?: string;
+}
+
+const { slug, title, url } = Astro.props;
+const permalink = url ?? new URL(`/${slug}`, Astro.site).href;
+const encodedUrl = encodeURIComponent(permalink);
+const encodedTitle = encodeURIComponent(title);
+
+const shareLinks = [
+	{
+		href: `https://bsky.app/intent/compose?text=${encodedTitle}+${encodedUrl}`,
+		label: 'Partager sur Bluesky',
+		icon: 'carbon:logo-bluesky',
+		popup: true,
+	},
+];
+---
+
+<meta-actions class="contents">
+	<div class="flex flex-wrap items-center gap-3" role="group" aria-label="Partager">
+		{shareLinks.map(({ href, label, icon, popup }) => (
+			<a
+				href={href}
+				target={popup ? '_blank' : undefined}
+				rel={popup ? 'noopener noreferrer' : undefined}
+				aria-label={label}
+				class="meta-link no-underline hidden md:inline-flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors"
+				data-popup={popup ? 'true' : undefined}
+				data-umami-event="share-bluesky"
+				data-umami-event-comic={slug}
+			>
+				<Icon name={icon} class="size-4" aria-hidden="true" />
+			</a>
+		))}
+
+		<button
+			type="button"
+			class="js-native-share inline-flex md:hidden items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors cursor-pointer"
+			aria-label="Partager"
+			data-url={permalink}
+			data-title={title}
+			data-umami-event="share-native"
+			data-umami-event-comic={slug}
+		>
+			<Icon name="carbon:share" class="size-4" aria-hidden="true" />
+		</button>
+
+		<button
+			type="button"
+			class="js-copy-link inline-flex items-center justify-center p-2 text-zinc-600 hover:text-zinc-900 transition-colors cursor-pointer"
+			aria-label="Copier le lien"
+			data-url={permalink}
+			data-umami-event="copy-link"
+			data-umami-event-comic={slug}
+		>
+			<span class="js-copy-icon">
+				<Icon name="carbon:copy" class="size-4" aria-hidden="true" />
+			</span>
+			<span class="js-check-icon hidden">
+				<Icon name="carbon:checkmark" class="size-4" aria-hidden="true" />
+			</span>
+		</button>
+	</div>
+</meta-actions>
+
+<script>
+	class ShareButton extends HTMLElement {
+		connectedCallback() {
+			this.setupCopyLink();
+			this.setupNativeShare();
+			this.setupPopupLinks();
+		}
+
+		private setupPopupLinks() {
+			this.querySelectorAll<HTMLAnchorElement>('a.meta-link[data-popup]').forEach((link) => {
+				link.addEventListener('click', (e) => {
+					e.preventDefault();
+					window.open(link.href, '_blank', 'width=600,height=500,noopener,noreferrer');
+				});
+			});
+		}
+
+		private setupNativeShare() {
+			const btn = this.querySelector('.js-native-share') as HTMLButtonElement;
+			if (!btn) return;
+
+			if (!navigator.share) {
+				btn.classList.add('hidden');
+				return;
+			}
+
+			btn.addEventListener('click', async () => {
+				const url = btn.dataset.url;
+				const shareTitle = btn.dataset.title;
+				if (!url) return;
+
+				try {
+					await navigator.share({
+						title: shareTitle || document.title,
+						url,
+					});
+				} catch (error) {
+					if (error instanceof DOMException && error.name === 'AbortError') return;
+				}
+			});
+		}
+
+		private setupCopyLink() {
+			const btn = this.querySelector('.js-copy-link') as HTMLButtonElement;
+			if (!btn) return;
+
+			btn.addEventListener('click', async () => {
+				const url = btn.dataset.url;
+				if (!url) return;
+
+				try {
+					await navigator.clipboard.writeText(url);
+				} catch {
+					// Fallback for insecure contexts where clipboard access is blocked
+					window.prompt('Copiez le lien :', url);
+				}
+
+				const copyIcon = btn.querySelector('.js-copy-icon') as HTMLElement;
+				const checkIcon = btn.querySelector('.js-check-icon') as HTMLElement;
+				copyIcon?.classList.add('hidden');
+				checkIcon?.classList.remove('hidden');
+				setTimeout(() => {
+					copyIcon?.classList.remove('hidden');
+					checkIcon?.classList.add('hidden');
+				}, 2000);
+			});
+		}
+	}
+	customElements.define('meta-actions', ShareButton);
+</script>

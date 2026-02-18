@@ -20,8 +20,8 @@ const sortedComics = comics.sort((a, b) => b.data.date.valueOf() - a.data.date.v
 					<div
 						id={currentId}
 						class:list={[
-							'scroll-mt-4 transition-opacity duration-1000 ease-out',
-							index === 0 ? 'opacity-100' : 'opacity-40',
+							'scroll-mt-6 md:scroll-mt-12 transition-opacity duration-1000 ease-out',
+							index === 0 ? 'opacity-100' : 'opacity-10',
 						]}
 						data-reveal={index > 0 ? '' : undefined}
 					>
@@ -49,7 +49,7 @@ const sortedComics = comics.sort((a, b) => b.data.date.valueOf() - a.data.date.v
 				}
 			}
 		},
-		{ threshold: 0.40 },
+		{ threshold: 0.45 },
 	);
 
 	for (const el of reveals) {

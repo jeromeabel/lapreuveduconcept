@@ -1,0 +1,86 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+	slug: string;
+}
+
+const { slug } = Astro.props;
+---
+
+<button
+	type="button"
+	disabled
+	aria-pressed="false"
+	aria-label="Voter"
+	data-comic-id={slug}
+	data-umami-event="vote"
+	data-umami-event-comic={slug}
+	class="vote-btn"
+>
+	<span class="heart" aria-hidden="true">
+		<Icon name="carbon:favorite" class="icon-outline size-4" />
+		<Icon name="carbon:favorite-filled" class="icon-filled size-4" />
+	</span><span class="count tabular-nums">—</span>
+</button>
+
+<style>
+	.vote-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		color: var(--color-zinc-400);
+		cursor: default;
+		transition: color 150ms ease-out;
+		background: none;
+		border: none;
+		padding: 0;
+		font: inherit;
+	}
+
+	.vote-btn:not(:disabled):hover {
+		color: var(--color-zinc-700);
+		cursor: pointer;
+	}
+
+	.vote-btn[aria-pressed='true'] {
+		color: var(--color-rose-500);
+	}
+
+	.vote-btn[data-pending] {
+		opacity: 0.5;
+		cursor: wait;
+		pointer-events: none;
+	}
+
+	/* icon swap via aria-pressed */
+	.icon-filled {
+		display: none;
+	}
+	.vote-btn[aria-pressed='true'] .icon-outline {
+		display: none;
+	}
+	.vote-btn[aria-pressed='true'] .icon-filled {
+		display: block;
+	}
+
+	/* inline-flex lets transform apply and keeps icons aligned */
+	.heart {
+		display: inline-flex;
+		align-items: center;
+	}
+
+	@keyframes heart-pop {
+		0%,
+		100% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.1);
+		}
+	}
+
+	.heart-pop {
+		animation: heart-pop 300ms ease-out;
+	}
+</style>

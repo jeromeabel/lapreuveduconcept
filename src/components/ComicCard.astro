@@ -1,7 +1,8 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import MetaBar from './MetaBar.astro';
 import ComicImage from './ComicImage.astro';
+import VoteButton from './VoteButton.astro';
+import ShareActions from './ShareActions.astro';
 
 interface Props {
 	comic: CollectionEntry<'comics'>;
@@ -9,22 +10,45 @@ interface Props {
 }
 
 const { comic, eager = false } = Astro.props;
+const formattedDate = comic.data.date.toLocaleDateString('fr-FR', {
+	day: '2-digit',
+	month: '2-digit',
+	year: 'numeric',
+});
 ---
 
-<!-- px-8 / md:px-12 / border must match layoutTokens cardPad*Rem and cardBorderPx -->
-<article class="px-6 pt-6 pb-1 md:px-12 md:pt-12 md:pb-8 border border-zinc-300 shadow-lg">
-	<div class="comic-grid grid grid-cols-1 md:grid-cols-2">
-		{comic.data.pages.map((page, i) => (
-			<ComicImage
-				src={page}
-				alt={`${comic.data.alt} — page ${i + 1}`}
-				eager={eager}
-			/>
-		))}
+<div>
+	<!-- Paper: images only, no chrome inside -->
+	<!-- px-6 / md:px-12 / border must match layoutTokens cardPad*Rem and cardBorderPx -->
+	<article class="p-6 md:p-12 border border-zinc-300 shadow-lg">
+		<div class="comic-grid grid grid-cols-1 md:grid-cols-2">
+			{comic.data.pages.map((page, i) => (
+				<ComicImage
+					src={page}
+					alt={`${comic.data.alt} — page ${i + 1}`}
+					eager={eager}
+				/>
+			))}
+		</div>
+	</article>
+
+	<!-- Label strip: below the paper -->
+	<div class="flex items-center gap-x-3 pt-2 md:pt-3 text-sm">
+		<a
+			href={`/${comic.id}`}
+			class="no-underline hover:underline min-w-0 inline-flex items-baseline gap-x-2 text-zinc-500 hover:text-zinc-900 transition-colors duration-150"
+			data-umami-event="click-permalink"
+			data-umami-event-comic={comic.id}
+		>
+			<span class="font-semibold tabular-nums shrink-0">{comic.id}</span>
+			<span class="text-zinc-300 shrink-0" aria-hidden="true">·</span>
+			<span class="min-w-0 truncate">{comic.data.title}</span>
+		</a>
+		<span class="text-zinc-300 shrink-0" aria-hidden="true">·</span>
+		<time datetime={comic.data.date.toISOString()} class="text-zinc-500 shrink-0">{formattedDate}</time>
+		<div class="ml-auto flex items-center shrink-0 gap-3">
+			<VoteButton slug={comic.id} />
+			<ShareActions slug={comic.id} title={comic.data.title} />
+		</div>
 	</div>
-	<MetaBar
-		date={comic.data.date}
-		slug={comic.id}
-		title={comic.data.title}
-	/>
-</article>
+</div>
