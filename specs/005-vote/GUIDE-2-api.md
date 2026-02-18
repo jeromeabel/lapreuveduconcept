@@ -193,7 +193,7 @@ Write the POST handler together. Focus on error handling:
   - The server sends a Set-Cookie header to create one. Cookies can be configured with several attributes.
   - `HttpOnly`: JS can't read it → XSS protection. Imagine an attacker injects a `<script>` tag into your page (via a comment field, a compromised dependency, etc.) — this is called XSS (Cross-Site Scripting), it cannot steal the cookie value, even if it runs on your page.
   steal the cookie value, even if it runs on your page.
-  - `SameSite=Lax`: Blocks cross-site POST → CSRF protection. Imagine a malicious site evil.com that contains a hidden form that auto-submits to leconceptdelapreuve.fr/api/vote. Without protection, your browser would send your cookie — and the server would think you made the request. This attack is called CSRF (Cross-Site Request Forgery).
+  - `SameSite=lax`: Blocks cross-site POST → CSRF protection. Imagine a malicious site evil.com that contains a hidden form that auto-submits to leconceptdelapreuve.fr/api/vote. Without protection, your browser would send your cookie — and the server would think you made the request. This attack is called CSRF (Cross-Site Request Forgery).
   - `Secure`: HTTPS only → network protection
   - `Max-Age`: Expiry in seconds
 - **Path** attribute
@@ -201,10 +201,141 @@ Write the POST handler together. Focus on error handling:
   - `Path=/api` would only send the cookie on `/api/*` routes — the server might not see the cookie on page requests, leading to inconsistent identity or duplicate cookies being created.
 
 ### Step 6 — GET endpoint
-<!-- What did you learn? -->
+
+- What the server should do when it receives `GET /api/vote?comic=001,002`? :
+1. Parse ?comic= → ["001", "002"]          ← URL / request parsing
+2. Read cookie → get or create visitorId   ← identity
+3. For each comicId: COUNT votes in DB     ← database query
+4. For each comicId: check if visitorId voted ← database query
+5. Build & return JSON map                 ← response
+- **Drizzle & SQL**
+  - Drizzle: `db.select({ value: count() }).from(Vote).where(eq(Vote.comicId, '001'))`
+  - SQL: `SELECT COUNT(*) AS value FROM Vote WHERE comicId = '001'`
+- `Response.json()` is a static method added in modern runtimes (Node 18+, Deno, browsers). It's shorthand for `new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })`. Astro's server runtime supports it natively.
+- The `application/` prefix is the MIME type family — it tells the browser "this is structured data for an application to parse", not text to display. The browser (or fetch()) uses this header to know it should parse the body as JSON rather than treating it as plain text or HTML.
+
+**From implementation**:
+- In serverless, each DB round-trip has latency cost (cold container + network). 20 queries vs 2 queries matters more than row count at blog scale. Let the DB aggregate — that's what it's optimised for.
+- **Option A — fetch all rows, aggregate in JS (1 query)**
+```js
+const allVotes = await db.select().from(Vote).where(inArray(Vote.comicId, comicIds));
+// filter + count in JS
+// 1 round-trip, but fetches every row — SQL does no aggregation
+```
+- **Option B — 2 queries with inArray + groupBy (always 2 queries)**
+```js
+// Query 1: counts per comic (SQL does the aggregation)
+db.select({ comicId: Vote.comicId, value: count() })
+  .from(Vote)
+  .where(inArray(Vote.comicId, comicIds))
+  .groupBy(Vote.comicId);
+
+// Query 2: which comics did this visitor vote for?
+db.select({ comicId: Vote.comicId })
+  .from(Vote)
+  .where(and(inArray(Vote.comicId, comicIds), eq(Vote.visitorId, visitorId)));
+/*
+- Always 2 round-trips regardless of comic count
+- SQL handles counting (efficient even with thousands of rows)
+- JS only assembles the result map
+*/
+```
+
+**How to test the endpoint**
+
+```ts
+export default async function seed() {
+  await db.insert(Vote).values([
+    { comicId: '001', visitorId: 'visitor-aaa' },
+    { comicId: '001', visitorId: 'visitor-bbb' },
+    { comicId: '002', visitorId: 'visitor-aaa' },
+  ]);
+}
+```
+
+Step 3 — Test with curl (or just paste the URL in your browser):
+- Single comic: `curl "http://localhost:4321/api/vote?comic=001"`
+- Multiple comics: `curl "http://localhost:4321/api/vote?comic=001,002"`
+- Missing param — should return 400 `curl "http://localhost:4321/api/vote" `
+
+Expected response for ?comic=001,002:
+```json
+{
+  "result": [
+    { "comicId": "001", "votes": 2, "userVoted": false },
+    { "comicId": "002", "votes": 1, "userVoted": false }
+  ]
+}
+```
+
+userVoted will be false until you have an actual cookie. After testing, check your browser's DevTools → Application → Cookies — you should see the
+visitorId cookie appear on the first request.
+
 
 ### Step 7 — POST endpoint
-<!-- What did you learn? -->
+**Why POST (not GET or DELETE)?***
+- POST signals "side effects" — not semantically "create only"
+- Browser/cache/CDN never cache or auto-replay POST requests
+- A single POST toggle endpoint is pragmatic: one URL, one handler, simpler client code
+- Pure REST would split into POST (like) + DELETE (unlike) — more semantic but more surface area
+
+**The toggle pattern**:
+1. Get visitorId from cookie (or create one)
+2. Query DB: does a vote exist for (comicId, visitorId)?
+3. If yes → DELETE that row (unlike)
+4. If no → INSERT a new row (like)
+5. Query the new total COUNT
+6. Return { comicId, count, voted } for the frontend to update
+
+**Race condition & idempotency**:
+- Frontend: debounce + disable button while request is pending
+- Serverless: no shared memory → no mutex possible across instances
+- Database: unique index on (comicId, visitorId) is the last line of defense — a duplicate INSERT throws a constraint error, which we catch
+- Defense in depth: each layer covers a different failure mode
+
+**Error handling decisions**:
+- `request.json()` can throw on malformed body → wrap in try/catch → return 400
+- Missing/invalid comicId → return 400 with an error message (Client sent bad data): don't retry, the request is wrong
+- DB error → return 500 (Infrastructure failed): maybe retry later
+- Success → 200 with the updated state
+
+**Drizzle's .get() vs array return**
+- `db.select()` returns an array, but adding `.limit(1).get()` returns a single object `({ count: 5 })` or `undefined`.
+
+**How to test the endpoint**
+
+Start the dev server (`pnpm dev`) and run these curl commands:
+
+```bash
+# Like comic 001 → should return { voted: true, count: 1 }
+curl -X POST http://localhost:4321/api/vote \
+  -H "Content-Type: application/json" \
+  -d '{"comicId": "001"}' \
+  -c cookies.txt -b cookies.txt
+
+# Run again → toggles off { voted: false, count: 0 }
+curl -X POST http://localhost:4321/api/vote \
+  -H "Content-Type: application/json" \
+  -d '{"comicId": "001"}' \
+  -c cookies.txt -b cookies.txt
+```
+
+> `-c cookies.txt` saves the `visitorId` cookie, `-b cookies.txt` sends it on the next request.
+> Without these flags, each curl call is a new visitor — the toggle won't work.
+
+Test error cases:
+
+```bash
+# Missing comicId → 400
+curl -X POST http://localhost:4321/api/vote \
+  -H "Content-Type: application/json" \
+  -d '{}'
+
+# Malformed JSON → 400
+curl -X POST http://localhost:4321/api/vote \
+  -H "Content-Type: application/json" \
+  -d 'not-json'
+```
 
 ---
 
