@@ -140,10 +140,65 @@ Write the POST handler together. Focus on error handling:
 > The LLM should not write these — only the student.
 
 ### Step 4 — Server requests
-<!-- What did you learn? -->
+
+- **Hybrid mode** in Astro: Static & server rendering
+  - Static is always the default. You opt individual routes into server rendering with export const prerender = false => hybrid when you add a server adapter (like netlify())
+
+- During **pnpm build**, Astro splits the projects into two buckets using `prerender = false` or API route
+   that exports GET/POST handlers:
+    - **Static routes** → plain HTML files : We still need static data to serve all the content as fast as possible (Netlify uses CDN for static files)
+    - **Server routes** → code that must run on each request = Server rendering: We need dynamic data for votes (server routes) -> Server adapter. Netlify runs your server routes as serverless functions behind the scenes.
+    - Build flow: code (pages/api/vote.ts) → build (Astro identifies it as server-rendered) → Packages it as a Netlify Function (@astrojs/netlify adapter) → deploy (Netlify hosts the functionn check `.netlify/functions/` in the dist folder)
+
+- **Serverless** functions for server routes: 
+  - "serverless" in the sense that you don't manage a server. But there is a real server somewhere
+  - Netlify spins up a container, runs your function file, and shuts it down.
+  - The api/vote.ts becomes a small JavaScript file sitting on Netlify's infrastructure
+
+- **Server**: costs when idle 24/7; always on, waiting for requests; a Node.js process running; you handle scaling
+- **Serverless**: no request, no cost; Spins up per request, then stops; just your function, Netlify scales automatically (Each request gets its own container. So 100 simultaneous requests = 100 parallel executions. Nobody waits in line.). Trade-off: cold starts.
+- **Cold Start**: a cold start is the delay when Netlify spins up a new container for the first request after the function has been idle. Subsequent requests reuse the warm container.
+
+- **Why API routes are .ts files?**
+  - A .astro file is for rendering HTML — it produces a page with a template, styles, layout, etc.                      
+  - A .ts file in src/pages/api/ is a pure function — it receives a Request, runs logic, and returns a Response (typically JSON). No HTML, no component, no layout.
+  - Astro uses file-based routing. The path src/pages/api/vote.ts maps directly to the URL /api/vote —  Any file under src/pages/ becomes a route.
+  - The api/ folder is just a convention for organization.
+  - the file exports named functions like GET or POST instead of an Astro template. They return Response objects instead of HTML. Astro sees that and treats it as an API endpoint.
+
+- The **request/response cycle**
+  1. The browser sends an HTTP request to your server (e.g. POST /api/vote)
+  2. Netlify sees this route is server-rendered → runs your function
+  3. Your function executes code (query DB, insert row, etc.)
+  4. It returns an HTTP response (JSON data + status code)
+  5. The browser receives the response and updates the UI
+
+- **GET vs POST**: 
+  - GET never changes data, POST can.
+  - Browsers and caches assume GET requests are safe to repeat or cache. A POST is never cached.
+  - POST = triggers a side effect (something changes on the server).
+  - POST covers both "like" and "unlike" in one endpoint. no need update, delete
+
 
 ### Step 5 — Cookies & identity
-<!-- What did you learn? -->
+
+- **Why cookies?**
+  - Cookies are small key-value strings that the browser stores and automatically (no JS code) sends with every HTTP request to the same domain. (Header)
+  - Server can read them
+  - Cookie persists (if not expired) with the same browser, same device, next week
+  - Trade-offs: they are not a stable identity. They are a best-effort, anonymous, per-browser identifier.
+    - Differents browsers, devices, incognito, clearing browser data will clear the cookie
+    - This is a comic blog vote counter. It's not an election or a financial transaction. The goal is roughly: "don't let someone spam-click and inflate counts."
+- **How to make Cookies secure?**
+  - The server sends a Set-Cookie header to create one. Cookies can be configured with several attributes.
+  - `HttpOnly`: JS can't read it → XSS protection. Imagine an attacker injects a `<script>` tag into your page (via a comment field, a compromised dependency, etc.) — this is called XSS (Cross-Site Scripting), it cannot steal the cookie value, even if it runs on your page.
+  steal the cookie value, even if it runs on your page.
+  - `SameSite=Lax`: Blocks cross-site POST → CSRF protection. Imagine a malicious site evil.com that contains a hidden form that auto-submits to leconceptdelapreuve.fr/api/vote. Without protection, your browser would send your cookie — and the server would think you made the request. This attack is called CSRF (Cross-Site Request Forgery).
+  - `Secure`: HTTPS only → network protection
+  - `Max-Age`: Expiry in seconds
+- **Path** attribute
+  - `Path=/`: Sent on all requests to the domain. Best fit that follow the real user navigation: home page, comics pages.
+  - `Path=/api` would only send the cookie on `/api/*` routes — the server might not see the cookie on page requests, leading to inconsistent identity or duplicate cookies being created.
 
 ### Step 6 — GET endpoint
 <!-- What did you learn? -->
