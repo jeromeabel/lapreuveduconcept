@@ -1,6 +1,9 @@
-import { db } from 'astro:db';
+import { db, Vote } from 'astro:db';
 
-// https://astro.build/db/seed
 export default async function seed() {
-	// TODO
+  await db.insert(Vote).values([
+    { comicId: '001', visitorId: 'visitor-aaa' },
+    { comicId: '001', visitorId: 'visitor-bbb' },
+    { comicId: '002', visitorId: 'visitor-aaa' },
+  ]);
 }

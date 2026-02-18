@@ -120,7 +120,41 @@ Set up Turso together. The student runs each CLI command and the LLM explains wh
 > The LLM should not write these — only the student.
 
 ### Step 8 — Client-side fetch
-<!-- What did you learn? -->
+- Two-step response (headers → `.json()`)
+- `fetch` is asynchronous. It doesn't block the page. The browser fires the HTTP request in the background and returns a Promise immediately. 
+- `response.json()` is also a Promise — it streams and parses the body separately from receiving the headers.
+
+```ts
+// The response comes in two steps:
+const response = await fetch('/api/vote?comic=001'); // Promise → Response object
+const data = await response.json();                  // Promise → parsed JS object
+```
+
+- **Progressive enhancement** / honest loading state:
+  - The page works (it renders) before the JS runs, and the button becomes interactive once it's safe to use.
+  - Disabled: The button starts disabled because we don't have the real data yet. 
+  - The count shows — instead of 0 because 0 would be a lie 
+
+- `data-comic-id="001"` attribute.
+  - `<button data-comic-id="001">♥ <span>—</span></button>`
+  - With `data-*` attributes, the data lives with the element. Each button carries its own context
+  - `dataset.comicId` is how JS reads `data-comic-id` — the browser automatically converts kebab-case to camelCase.
+
+```js
+document.querySelectorAll('button[data-comic-id]').forEach(button => {
+  const comicId = button.dataset.comicId; // "001", "002", etc.
+  // Each button brings its own data
+});
+```
+
+  - `classList.toggle` & `classList.add`
+    - After GET — setting initial state
+    - After POST — reconciling server response
+
+```js
+const newVoted = !voted; // you know this from your variable
+button.classList.toggle('voted', newVoted); // second argument = force true/false
+```
 
 ### Step 9 — Optimistic UI
 <!-- What did you learn? -->

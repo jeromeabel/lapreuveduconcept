@@ -33,6 +33,10 @@ const shareLinks = [
 
 	<span class="text-zinc-300" aria-hidden="true">|</span>
 
+	<button disabled data-comic-id={slug}>♥ <span>—</span></button>
+
+	<span class="text-zinc-300" aria-hidden="true">|</span>
+
 	<meta-actions class="contents">
 		<div class="flex flex-wrap items-center gap-3" role="group" aria-label="Partager">
 			{shareLinks.map(({ href, label, icon, popup }) => (
@@ -162,3 +166,4 @@ const shareLinks = [
 	}
 	customElements.define('meta-actions', ShareButton);
 </script>
+

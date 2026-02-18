@@ -23,6 +23,17 @@ function getOrCreateVisitorId(cookies: AstroCookies): string {
   return visitorId;
 }
 
+
+type VoteResult = {
+  comicId: string;
+  votes: number;
+  userVoted: boolean;
+};
+
+export type VoteResponse =
+  | { result: VoteResult[] }
+  | { error: string };
+
 export async function GET(context: APIContext): Promise<Response> {
 
   // Get Ids
@@ -56,7 +67,7 @@ export async function GET(context: APIContext): Promise<Response> {
   const countMap = new Map(comicsCounts.map(c => [c.comicId, c.value]));
   const votedSet = new Set(userVotes.map(v => v.comicId));
 
-  const results = comicIds.map(comicId => ({
+  const results = comicIds.map((comicId): VoteResult => ({
     comicId,
     votes: countMap.get(comicId) ?? 0,
     userVoted: votedSet.has(comicId),
@@ -64,8 +75,6 @@ export async function GET(context: APIContext): Promise<Response> {
 
   return Response.json({ result: results });
 }
-
-
 
 export async function POST(context: APIContext): Promise<Response> {
 
