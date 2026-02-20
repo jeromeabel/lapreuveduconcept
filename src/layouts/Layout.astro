@@ -47,14 +47,18 @@ const layoutStyle = `--page-max: ${layoutTokens.pageMaxRem}rem; --page-pad: ${la
 			type={type}
 			publishedDate={publishedDate}
 		/>
-		{/* Umami analytics — only in production.
+		{/* Umami analytics — only in production, loaded after page is idle.
 				To exclude yourself: localStorage.setItem('umami.disabled', 1) in DevTools */}
 		{import.meta.env.PROD && (
-			<script
-				is:inline
-				defer
-				src="https://cloud.umami.is/script.js"
-				data-website-id="892c8f89-23df-469b-9177-76c7063729e2"></script>
+			<script is:inline>
+				(window.requestIdleCallback || function (cb) { setTimeout(cb, 200) })(function () {
+					var s = document.createElement('script');
+					s.defer = true;
+					s.src = 'https://cloud.umami.is/script.js';
+					s.dataset.websiteId = '892c8f89-23df-469b-9177-76c7063729e2';
+					document.head.appendChild(s);
+				});
+			</script>
 		)}
 	</head>
 	<body class="min-h-screen bg-[#fdfdfd] text-zinc-900 font-sans">
