@@ -222,18 +222,27 @@ const allVotes = await db.select().from(Vote).where(inArray(Vote.comicId, comicI
 // filter + count in JS
 // 1 round-trip, but fetches every row — SQL does no aggregation
 ```
+
 - **Option B — 2 queries with inArray + groupBy (always 2 queries)**
 ```js
-// Query 1: counts per comic (SQL does the aggregation)
-db.select({ comicId: Vote.comicId, value: count() })
-  .from(Vote)
-  .where(inArray(Vote.comicId, comicIds))
-  .groupBy(Vote.comicId);
+// Get queries in parallel
+const [comicsCounts, userVotes] = await Promise.all([
+  
+  // Query 1: counts per comic (SQL does the aggregation)
+  db.select({ comicId: Vote.comicId, value: count() })
+    .from(Vote)
+    .where(inArray(Vote.comicId, comicIds))
+    .groupBy(Vote.comicId),
 
-// Query 2: which comics did this visitor vote for?
-db.select({ comicId: Vote.comicId })
-  .from(Vote)
-  .where(and(inArray(Vote.comicId, comicIds), eq(Vote.visitorId, visitorId)));
+  // Query 2: which comics did this visitor vote for?
+  db.select({ comicId: Vote.comicId })
+    .from(Vote)
+    .where(and(
+      inArray(Vote.comicId, comicIds),
+      eq(Vote.visitorId, visitorId)
+    )),
+]);
+
 /*
 - Always 2 round-trips regardless of comic count
 - SQL handles counting (efficient even with thousands of rows)

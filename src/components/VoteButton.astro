@@ -16,14 +16,16 @@ const { slug } = Astro.props;
 	data-comic-id={slug}
 	data-umami-event="vote"
 	data-umami-event-comic={slug}
-	class="vote-btn px-2"
+	class="vote-btn w-8"
 	title="Ce dessin vous a bien fait marrer ?"
 >
 	<span class="heart" aria-hidden="true">
 		<Icon name="carbon:favorite" class="icon-outline size-4" />
 		<Icon name="carbon:favorite-filled" class="icon-filled size-4" />
 	</span>
-	<span class="count tabular-nums">—</span>
+	<span class="count tabular-nums">
+		<span class="inline-block size-3 animate-pulse rounded bg-current opacity-25" aria-hidden="true"></span>
+	</span>
 </button>
 
 <style>
@@ -63,6 +65,11 @@ const { slug } = Astro.props;
 	}
 	.vote-btn[aria-pressed='true'] .icon-filled {
 		display: block;
+	}
+
+	.count {
+		display: inline-flex;
+		align-items: center;
 	}
 
 	/* inline-flex lets transform apply and keeps icons aligned */

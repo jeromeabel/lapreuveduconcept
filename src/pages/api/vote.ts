@@ -48,20 +48,19 @@ export async function GET(context: APIContext): Promise<Response> {
   // Get user
   const visitorId = getOrCreateVisitorId(context.cookies);
 
-  // Get queries
-  const comicsCounts = await 
+  // Get queries in parallel
+  const [comicsCounts, userVotes] = await Promise.all([
     db.select({ comicId: Vote.comicId, value: count() })
-    .from(Vote)
-    .where(inArray(Vote.comicId, comicIds))
-    .groupBy(Vote.comicId);
-  
-  const userVotes = await
+      .from(Vote)
+      .where(inArray(Vote.comicId, comicIds))
+      .groupBy(Vote.comicId),
     db.select({ comicId: Vote.comicId })
-    .from(Vote)
-    .where(and(
-      inArray(Vote.comicId, comicIds),
-      eq(Vote.visitorId, visitorId)
-    ));
+      .from(Vote)
+      .where(and(
+        inArray(Vote.comicId, comicIds),
+        eq(Vote.visitorId, visitorId)
+      )),
+  ]);
 
   // Results
   const countMap = new Map(comicsCounts.map(c => [c.comicId, c.value]));
