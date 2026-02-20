@@ -23,6 +23,7 @@ const pageTitle = ` ${comic.id} - ${siteName}`;
 	type="article"
 	publishedDate={comic.data.date}
 	currentSlug={comic.id}
+	earlyVoteIds={[comic.id]}
 >
 	<article class="space-y-6">
 		<div class="comic-grid grid grid-cols-1 md:grid-cols-2 border border-zinc-200 shadow-lg p-6 md:p-12">
@@ -30,7 +31,7 @@ const pageTitle = ` ${comic.id} - ${siteName}`;
 				<ComicImage
 					src={page}
 					alt={`${comic.data.alt} — page ${i + 1}`}
-					eager
+					eager={i < 2}
 				/>
 			))}
 		</div>

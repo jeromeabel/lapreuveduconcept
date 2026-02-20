@@ -8,7 +8,7 @@ const comics = await getCollection('comics');
 const sortedComics = comics.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
 
-<Layout type="website">
+<Layout type="website" earlyVoteIds={sortedComics.map(c => c.id)}>
 	<section class="flex flex-col">
 		{sortedComics.map((comic, index) => {
 			const currentId = `${comic.id}`;

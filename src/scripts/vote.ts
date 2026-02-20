@@ -1,5 +1,11 @@
 import type { VoteResponse } from "../pages/api/vote";
 
+declare global {
+  interface Window {
+    __votePromise?: Promise<Response>;
+  }
+}
+
 type VoteState = { count: number; voted: boolean };
 
 const fetchJson = async <T>(url: string, options?: RequestInit): Promise<T> => {
@@ -79,10 +85,18 @@ export async function initVote(): Promise<void> {
     });
   }
 
-  // Hydrate initial state
+  // Hydrate initial state — consume early-fetched promise if available, otherwise fetch now
   try {
-    const params = new URLSearchParams({ comic: [...buttonMap.keys()].join(",") });
-    const data = await fetchJson<VoteResponse>(`/api/vote?${params}`);
+    let data: VoteResponse;
+    if (window.__votePromise) {
+      const response = await window.__votePromise;
+      delete window.__votePromise;
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      data = await response.json() as VoteResponse;
+    } else {
+      const params = new URLSearchParams({ comic: [...buttonMap.keys()].join(",") });
+      data = await fetchJson<VoteResponse>(`/api/vote?${params}`);
+    }
 
     if ("error" in data) {
       console.error(data.error);
