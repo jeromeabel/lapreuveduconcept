@@ -37,7 +37,7 @@ const layoutStyle = `--page-max: ${layoutTokens.pageMaxRem}rem; --page-pad: ${la
 		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;600&display=swap" /></noscript>
 		{earlyVoteParam && (
 			<script is:inline define:vars={{ earlyVoteParam }}>
-				window.__votePromise = fetch('/api/vote?comic=' + earlyVoteParam);
+				window.__votePromise = fetch('https://api.jeromeabel.net/vote.php?comics=' + earlyVoteParam, { credentials: 'include' });
 			</script>
 		)}
 		<SEO
