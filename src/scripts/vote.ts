@@ -1,4 +1,4 @@
-import type { VoteResponse } from "../pages/api/vote";
+type PhpGetResponse = { counts: Record<string, number>; voted: string[] };
 
 declare global {
   interface Window {
@@ -7,6 +7,11 @@ declare global {
 }
 
 type VoteState = { count: number; voted: boolean };
+
+const API_URL = import.meta.env.PUBLIC_VOTE_API_URL
+  ?? (import.meta.env.DEV
+    ? "https://api.jeromeabel.net/vote-staging.php"
+    : "https://api.jeromeabel.net/vote.php");
 
 const fetchJson = async <T>(url: string, options?: RequestInit): Promise<T> => {
   const response = await fetch(url, options);
@@ -59,10 +64,11 @@ export async function initVote(): Promise<void> {
     updateButtonUI(button, optimistic);
 
     try {
-      const result = await fetchJson<{ count: number; voted: boolean }>("/api/vote", {
+      const result = await fetchJson<{ count: number; voted: boolean }>(API_URL, {
         method: "POST",
         body: JSON.stringify({ comicId }),
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
 
       const serverState: VoteState = { count: result.count, voted: result.voted };
@@ -87,30 +93,23 @@ export async function initVote(): Promise<void> {
 
   // Hydrate initial state — consume early-fetched promise if available, otherwise fetch now
   try {
-    let data: VoteResponse;
+    let data: PhpGetResponse;
     if (window.__votePromise) {
       const response = await window.__votePromise;
       delete window.__votePromise;
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      data = await response.json() as VoteResponse;
+      data = await response.json() as PhpGetResponse;
     } else {
-      const params = new URLSearchParams({ comic: [...buttonMap.keys()].join(",") });
-      data = await fetchJson<VoteResponse>(`/api/vote?${params}`);
+      const params = new URLSearchParams({ comics: [...buttonMap.keys()].join(",") });
+      data = await fetchJson<PhpGetResponse>(`${API_URL}?${params}`);
     }
 
-    if ("error" in data) {
-      console.error(data.error);
-      return;
-    }
-
-    for (const { comicId, votes, userVoted } of data.result) {
-      const voteState: VoteState = { count: votes, voted: userVoted };
+    const votedSet = new Set(data.voted);
+    for (const [comicId, button] of buttonMap) {
+      const voteState: VoteState = { count: data.counts[comicId] ?? 0, voted: votedSet.has(comicId) };
       state.set(comicId, voteState);
-      const button = buttonMap.get(comicId);
-      if (button) {
-        button.disabled = false;
-        updateButtonUI(button, voteState);
-      }
+      button.disabled = false;
+      updateButtonUI(button, voteState);
     }
   } catch (error) {
     console.error("Failed to fetch vote data:", error);
