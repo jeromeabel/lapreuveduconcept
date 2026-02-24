@@ -8,10 +8,8 @@ declare global {
 
 type VoteState = { count: number; voted: boolean };
 
-const API_URL = import.meta.env.PUBLIC_VOTE_API_URL
-  ?? (import.meta.env.DEV
-    ? "https://api.jeromeabel.net/vote-staging.php"
-    : "https://api.jeromeabel.net/vote.php");
+import { VOTE_API_URL } from '../utils/voteConfig';
+const API_URL = VOTE_API_URL;
 
 const fetchJson = async <T>(url: string, options?: RequestInit): Promise<T> => {
   const response = await fetch(url, options);
