@@ -25,10 +25,8 @@ const defaultImage = {
 };
 const ogImage = image ?? defaultImage;
 const layoutStyle = `--page-max: ${layoutTokens.pageMaxRem}rem; --page-pad: ${layoutTokens.pagePadRem}rem; --comic-gap: ${layoutTokens.comicGapRem}rem; --comic-margin: ${layoutTokens.comicMarginRem}rem;`;
-const voteApiUrl = import.meta.env.PUBLIC_VOTE_API_URL
-	?? (import.meta.env.DEV
-		? 'https://api.jeromeabel.net/vote-staging.php'
-		: 'https://api.jeromeabel.net/vote.php');
+import { VOTE_API_URL } from '../utils/voteConfig';
+const voteApiUrl = VOTE_API_URL;
 ---
 
 <!doctype html>
