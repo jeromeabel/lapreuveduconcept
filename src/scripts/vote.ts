@@ -8,6 +8,11 @@ declare global {
 
 type VoteState = { count: number; voted: boolean };
 
+const API_URL = import.meta.env.PUBLIC_VOTE_API_URL
+  ?? (import.meta.env.DEV
+    ? "https://api.jeromeabel.net/vote-staging.php"
+    : "https://api.jeromeabel.net/vote.php");
+
 const fetchJson = async <T>(url: string, options?: RequestInit): Promise<T> => {
   const response = await fetch(url, options);
   if (!response.ok) {
@@ -59,7 +64,7 @@ export async function initVote(): Promise<void> {
     updateButtonUI(button, optimistic);
 
     try {
-      const result = await fetchJson<{ count: number; voted: boolean }>("https://api.jeromeabel.net/vote.php", {
+      const result = await fetchJson<{ count: number; voted: boolean }>(API_URL, {
         method: "POST",
         body: JSON.stringify({ comicId }),
         headers: { "Content-Type": "application/json" },
@@ -96,7 +101,7 @@ export async function initVote(): Promise<void> {
       data = await response.json() as PhpGetResponse;
     } else {
       const params = new URLSearchParams({ comics: [...buttonMap.keys()].join(",") });
-      data = await fetchJson<PhpGetResponse>(`https://api.jeromeabel.net/vote.php?${params}`);
+      data = await fetchJson<PhpGetResponse>(`${API_URL}?${params}`);
     }
 
     const votedSet = new Set(data.voted);
