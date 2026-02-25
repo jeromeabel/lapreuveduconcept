@@ -1,0 +1,88 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import MagazineCard from '../../components/reading/MagazineCard.astro';
+
+const comics = await getCollection('comics');
+const sortedComics = comics.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<Layout title="Reading — Magazine" earlyVoteIds={sortedComics.map(c => c.id)}>
+	<div class="magazine-container">
+		{sortedComics.map((comic, index) => (
+			<MagazineCard
+				comic={comic}
+				index={index}
+				total={sortedComics.length}
+				eager={index === 0}
+			/>
+		))}
+	</div>
+</Layout>
+
+<style>
+	.magazine-container {
+		scroll-snap-type: y proximity;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.magazine-container {
+			scroll-snap-type: none;
+		}
+	}
+</style>
+
+<script>
+	// Parallax: update --parallax-offset based on scroll position
+	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (!prefersReducedMotion) {
+		const parallaxElements = document.querySelectorAll<HTMLElement>('.magazine-parallax');
+
+		const updateParallax = () => {
+			for (const el of parallaxElements) {
+				const rect = el.getBoundingClientRect();
+				const viewportCenter = window.innerHeight / 2;
+				const elementCenter = rect.top + rect.height / 2;
+				const distance = elementCenter - viewportCenter;
+				const offset = Math.round(distance * 0.05);
+				el.style.setProperty('--parallax-offset', `${offset}px`);
+			}
+		};
+
+		let ticking = false;
+		window.addEventListener('scroll', () => {
+			if (!ticking) {
+				requestAnimationFrame(() => {
+					updateParallax();
+					ticking = false;
+				});
+				ticking = true;
+			}
+		}, { passive: true });
+
+		updateParallax();
+	}
+
+	// Mobile dot indicators for magazine panels
+	document.querySelectorAll('.magazine-panels').forEach((panel) => {
+		const dots = panel.parentElement?.querySelectorAll('.mag-dot');
+		if (!dots?.length) return;
+
+		dots[0]?.classList.replace('bg-zinc-300', 'bg-zinc-700');
+
+		panel.addEventListener('scroll', () => {
+			const scrollLeft = panel.scrollLeft;
+			const panelWidth = panel.clientWidth;
+			const activeIndex = Math.round(scrollLeft / panelWidth);
+
+			dots.forEach((dot, i) => {
+				if (i === activeIndex) {
+					dot.classList.replace('bg-zinc-300', 'bg-zinc-700');
+				} else {
+					dot.classList.replace('bg-zinc-700', 'bg-zinc-300');
+				}
+			});
+		}, { passive: true });
+	});
+</script>
