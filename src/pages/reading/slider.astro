@@ -1,0 +1,107 @@
+---
+import { getCollection } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import Layout from '../../layouts/Layout.astro';
+import SliderCard from '../../components/reading/SliderCard.astro';
+
+const comics = await getCollection('comics');
+const sortedComics = comics.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<Layout title="Reading — Slider" earlyVoteIds={sortedComics.map(c => c.id)}>
+	<div class="slider-wrapper relative h-[calc(100dvh-theme(spacing.32))]">
+		<!-- Slides track -->
+		<div
+			class="slider-track flex overflow-x-auto snap-x snap-mandatory h-full scrollbar-hide"
+			role="region"
+			aria-roledescription="carousel"
+			aria-label="Bande dessinée"
+		>
+			{sortedComics.map((comic, index) => (
+				<SliderCard
+					comic={comic}
+					index={index}
+					total={sortedComics.length}
+					eager={index === 0}
+				/>
+			))}
+		</div>
+
+		<!-- Prev / Next buttons -->
+		<button
+			type="button"
+			class="slider-prev absolute left-2 top-1/2 -translate-y-1/2 p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-md text-zinc-600 hover:text-zinc-900 transition-colors z-10 disabled:opacity-30 disabled:cursor-default"
+			aria-label="Précédent"
+		>
+			<Icon name="carbon:chevron-left" class="size-6" />
+		</button>
+		<button
+			type="button"
+			class="slider-next absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-md text-zinc-600 hover:text-zinc-900 transition-colors z-10 disabled:opacity-30 disabled:cursor-default"
+			aria-label="Suivant"
+		>
+			<Icon name="carbon:chevron-right" class="size-6" />
+		</button>
+
+		<!-- Progress counter -->
+		<div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-zinc-500 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full">
+			<span class="slider-current">1</span> / <span class="slider-total">{sortedComics.length}</span>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+</style>
+
+<script>
+	const track = document.querySelector('.slider-track') as HTMLElement;
+	const prevBtn = document.querySelector('.slider-prev') as HTMLButtonElement;
+	const nextBtn = document.querySelector('.slider-next') as HTMLButtonElement;
+	const currentEl = document.querySelector('.slider-current') as HTMLElement;
+	const slides = track?.querySelectorAll('.slider-slide');
+
+	if (track && slides?.length) {
+		let currentIndex = 0;
+
+		function goTo(index: number) {
+			const clamped = Math.max(0, Math.min(index, slides!.length - 1));
+			slides![clamped].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+			currentIndex = clamped;
+			updateUI();
+		}
+
+		function updateUI() {
+			currentEl.textContent = String(currentIndex + 1);
+			prevBtn.disabled = currentIndex === 0;
+			nextBtn.disabled = currentIndex === slides!.length - 1;
+		}
+
+		prevBtn.addEventListener('click', () => goTo(currentIndex - 1));
+		nextBtn.addEventListener('click', () => goTo(currentIndex + 1));
+
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(currentIndex - 1); }
+			if (e.key === 'ArrowRight') { e.preventDefault(); goTo(currentIndex + 1); }
+		});
+
+		// Track scroll position to sync counter with touch-swipe
+		track.addEventListener('scroll', () => {
+			const scrollLeft = track.scrollLeft;
+			const slideWidth = track.clientWidth;
+			const newIndex = Math.round(scrollLeft / slideWidth);
+			if (newIndex !== currentIndex) {
+				currentIndex = newIndex;
+				updateUI();
+			}
+		}, { passive: true });
+
+		updateUI();
+	}
+</script>
