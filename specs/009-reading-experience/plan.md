@@ -1,6 +1,6 @@
 # 009 — Improving Reading Comic Strip Experience
 
-> Status: **draft**
+> Status: **in-progress**
 
 ## Problem
 

@@ -12,7 +12,7 @@ Each iteration has its own folder: `specs/<number>-<name>/plan.md`
 | [003-image-optimization](003-image-optimization/plan.md) | done | ComicImage component, fade-in animation, Sharp script for comics, fetchpriority hints |
 | [004-generate-cover](004-generate-cover/plan.md) | done | Auto-generate cover image from page images with title, borders, and credits |
 | [005-vote](005-vote/plan.md) | ready | Like/heart button per comic — Astro DB + Turso, cookie-based visitor ID, static shell + dynamic island |
-| [009-reading-experience](009-reading-experience/plan.md) | draft | Explore 3 comic reading UX prototypes: snap, slider, magazine — separate routes with real data |
+| [009-reading-experience](009-reading-experience/plan.md) | in-progress | Explore 3 comic reading UX prototypes: snap, slider, magazine — separate routes with real data |
 
 ## Statuses
 
