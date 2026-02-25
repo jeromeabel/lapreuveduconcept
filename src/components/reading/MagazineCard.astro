@@ -1,0 +1,96 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ComicImage from '../ComicImage.astro';
+import VoteButton from '../VoteButton.astro';
+import ShareActions from '../ShareActions.astro';
+
+interface Props {
+	comic: CollectionEntry<'comics'>;
+	index: number;
+	total: number;
+	eager?: boolean;
+}
+
+const { comic, index, total, eager = false } = Astro.props;
+const formattedDate = comic.data.date.toLocaleDateString('fr-FR', {
+	day: '2-digit',
+	month: '2-digit',
+	year: 'numeric',
+});
+---
+
+<section
+	class="magazine-section min-h-dvh snap-start flex items-center justify-center py-8"
+	aria-label={`${comic.data.title} — ${index + 1} sur ${total}`}
+	data-magazine-index={index}
+>
+	<div class="magazine-card sticky top-8 w-full max-w-5xl mx-auto px-4 md:px-0">
+		<article class="bg-white p-6 md:p-12 border border-zinc-300 shadow-lg">
+			<!-- Desktop: side-by-side grid with parallax wrapper -->
+			<div class="hidden md:grid grid-cols-2 gap-4">
+				{comic.data.pages.map((page, i) => (
+					<div class="magazine-parallax" style="--parallax-offset: 0px;">
+						<ComicImage
+							src={page}
+							alt={`${comic.data.alt} — page ${i + 1}`}
+							eager={eager && i < 2}
+						/>
+					</div>
+				))}
+			</div>
+
+			<!-- Mobile: horizontal scroll-snap -->
+			<div class="md:hidden magazine-panels flex overflow-x-auto snap-x snap-mandatory gap-4 scrollbar-hide">
+				{comic.data.pages.map((page, i) => (
+					<div class="w-full flex-shrink-0 snap-center">
+						<ComicImage
+							src={page}
+							alt={`${comic.data.alt} — page ${i + 1}`}
+							eager={eager && i < 2}
+						/>
+					</div>
+				))}
+			</div>
+
+			<!-- Mobile dot indicators -->
+			<div class="md:hidden flex justify-center gap-2 mt-3" aria-hidden="true">
+				{comic.data.pages.map((_, i) => (
+					<span class="mag-dot size-2 rounded-full bg-zinc-300 transition-colors" data-index={i} />
+				))}
+			</div>
+		</article>
+
+		<!-- Caption below card -->
+		<div class="flex items-center gap-x-3 px-3 md:px-0 pt-3 text-sm text-zinc-500">
+			<a href={`/${comic.id}`} class="no-underline text-zinc-700 hover:text-zinc-900">
+				{comic.id} · {comic.data.title}
+			</a>
+			<time datetime={comic.data.date.toISOString()} class="text-zinc-400">{formattedDate}</time>
+			<div class="ml-auto flex shrink-0 gap-3">
+				<VoteButton slug={comic.id} />
+				<ShareActions slug={comic.id} title={comic.data.title} />
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+
+	.magazine-parallax {
+		transform: translateY(var(--parallax-offset));
+		will-change: transform;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.magazine-parallax {
+			transform: none !important;
+		}
+	}
+</style>
