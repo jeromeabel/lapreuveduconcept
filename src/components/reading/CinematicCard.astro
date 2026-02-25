@@ -1,0 +1,142 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ComicImage from '../ComicImage.astro';
+import VoteButton from '../VoteButton.astro';
+import ShareActions from '../ShareActions.astro';
+
+interface Props {
+	comic: CollectionEntry<'comics'>;
+	index: number;
+	total: number;
+	eager?: boolean;
+}
+
+const { comic, index, total, eager = false } = Astro.props;
+const formattedDate = comic.data.date.toLocaleDateString('fr-FR', {
+	day: '2-digit',
+	month: '2-digit',
+	year: 'numeric',
+});
+---
+
+<article
+	class="comic-beat"
+	data-index={index + 1}
+	aria-label={`${comic.data.title} — ${index + 1} sur ${total}`}
+>
+	<div class="beat-number">Strip {comic.id}</div>
+
+	<div class="comic-content">
+		{comic.data.pages.map((page, i) => (
+			<div class="panel-wrapper">
+				<ComicImage
+					src={page}
+					alt={`${comic.data.alt} — page ${i + 1}`}
+					eager={eager && i < 2}
+				/>
+			</div>
+		))}
+	</div>
+
+	<div class="caption">
+		<span class="episode-id">{comic.id}</span>
+		<a href={`/${comic.id}`} class="caption-title">{comic.data.title}</a>
+		<time datetime={comic.data.date.toISOString()} class="caption-date">{formattedDate}</time>
+	</div>
+
+	<div class="beat-actions">
+		<VoteButton slug={comic.id} />
+		<ShareActions slug={comic.id} title={comic.data.title} />
+	</div>
+</article>
+
+<style>
+	.comic-beat {
+		height: 100vh;
+		width: 100%;
+		scroll-snap-align: center;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: 2rem;
+		opacity: 0;
+		transform: translateY(40px);
+		filter: blur(4px);
+		transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	:global(.comic-beat.is-visible) {
+		opacity: 1;
+		transform: translateY(0);
+		filter: blur(0);
+	}
+
+	.beat-number {
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.2em;
+		color: var(--accent, #c43b2a);
+		text-transform: uppercase;
+		margin-bottom: 1rem;
+	}
+
+	.comic-content {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.panel-wrapper {
+		width: clamp(160px, 22vw, 420px);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
+	.panel-wrapper:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+	}
+
+	.caption {
+		margin-top: 1.2rem;
+		font-size: clamp(0.95rem, 1.8vw, 1.3rem);
+		color: var(--ink, #1a1a1a);
+		text-align: center;
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+	}
+	.episode-id {
+		font-size: 0.7rem;
+		font-weight: 700;
+		color: var(--muted, #999);
+	}
+	.caption-title {
+		text-decoration: none;
+		color: inherit;
+	}
+	.caption-title:hover {
+		color: var(--accent, #c43b2a);
+	}
+	.caption-date {
+		font-size: 0.7rem;
+		color: var(--muted, #999);
+	}
+
+	.beat-actions {
+		margin-top: 0.6rem;
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	@media (max-width: 600px) {
+		.comic-content {
+			flex-direction: column;
+			align-items: center;
+		}
+		.panel-wrapper {
+			width: clamp(200px, 80vw, 360px);
+		}
+	}
+</style>
