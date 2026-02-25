@@ -1,0 +1,75 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ComicImage from '../ComicImage.astro';
+import VoteButton from '../VoteButton.astro';
+import ShareActions from '../ShareActions.astro';
+
+interface Props {
+	comic: CollectionEntry<'comics'>;
+	index: number;
+	total: number;
+	eager?: boolean;
+}
+
+const { comic, index, total, eager = false } = Astro.props;
+const formattedDate = comic.data.date.toLocaleDateString('fr-FR', {
+	day: '2-digit',
+	month: '2-digit',
+	year: 'numeric',
+});
+---
+
+<div
+	class="slider-slide w-full flex-shrink-0 snap-center flex flex-col items-center justify-center h-full px-4 md:px-12"
+	role="group"
+	aria-roledescription="slide"
+	aria-label={`${index + 1} sur ${total}: ${comic.data.title}`}
+>
+	<div class="w-full max-w-5xl">
+		<!-- Desktop: side-by-side -->
+		<div class="hidden md:grid grid-cols-2 gap-4">
+			{comic.data.pages.map((page, i) => (
+				<ComicImage
+					src={page}
+					alt={`${comic.data.alt} — page ${i + 1}`}
+					eager={eager && i < 2}
+				/>
+			))}
+		</div>
+
+		<!-- Mobile: horizontal snap -->
+		<div class="md:hidden slider-panels flex overflow-x-auto snap-x snap-mandatory gap-4 scrollbar-hide">
+			{comic.data.pages.map((page, i) => (
+				<div class="w-full flex-shrink-0 snap-center">
+					<ComicImage
+						src={page}
+						alt={`${comic.data.alt} — page ${i + 1}`}
+						eager={eager && i < 2}
+					/>
+				</div>
+			))}
+		</div>
+	</div>
+
+	<!-- Caption -->
+	<div class="flex items-center gap-x-3 mt-4 text-sm text-zinc-500 w-full max-w-5xl">
+		<a href={`/${comic.id}`} class="no-underline text-zinc-700 hover:text-zinc-900">
+			{comic.id} · {comic.data.title}
+		</a>
+		<time datetime={comic.data.date.toISOString()} class="text-zinc-400">{formattedDate}</time>
+		<div class="ml-auto flex shrink-0 gap-3">
+			<VoteButton slug={comic.id} />
+			<ShareActions slug={comic.id} title={comic.data.title} />
+		</div>
+	</div>
+</div>
+
+<style>
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+</style>
