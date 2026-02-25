@@ -1,0 +1,82 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import SnapCard from '../../components/reading/SnapCard.astro';
+
+const comics = await getCollection('comics');
+const sortedComics = comics.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<Layout title="Reading — Snap" earlyVoteIds={sortedComics.map(c => c.id)}>
+	<div class="snap-container h-dvh overflow-y-auto snap-y snap-mandatory -mx-[var(--page-pad)]">
+		{sortedComics.map((comic, index) => (
+			<SnapCard
+				comic={comic}
+				index={index}
+				total={sortedComics.length}
+				eager={index === 0}
+			/>
+		))}
+	</div>
+</Layout>
+
+<style>
+	.snap-container {
+		scroll-snap-type: y mandatory;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.snap-container {
+			scroll-snap-type: y proximity;
+		}
+	}
+</style>
+
+<script>
+	const container = document.querySelector('.snap-container');
+	if (container) {
+		document.addEventListener('keydown', (e) => {
+			const sections = container.querySelectorAll('.snap-section');
+			if (!sections.length) return;
+
+			const containerRect = container.getBoundingClientRect();
+			let currentIndex = 0;
+			for (let i = 0; i < sections.length; i++) {
+				const rect = sections[i].getBoundingClientRect();
+				if (Math.abs(rect.top - containerRect.top) < 50) {
+					currentIndex = i;
+					break;
+				}
+			}
+
+			if ((e.key === 'ArrowDown' || e.key === ' ') && currentIndex < sections.length - 1) {
+				e.preventDefault();
+				sections[currentIndex + 1].scrollIntoView({ behavior: 'smooth' });
+			} else if (e.key === 'ArrowUp' && currentIndex > 0) {
+				e.preventDefault();
+				sections[currentIndex - 1].scrollIntoView({ behavior: 'smooth' });
+			}
+		});
+	}
+
+	document.querySelectorAll('.snap-panels').forEach((panel) => {
+		const dots = panel.parentElement?.querySelectorAll('.snap-dot');
+		if (!dots?.length) return;
+
+		dots[0]?.classList.replace('bg-zinc-300', 'bg-zinc-700');
+
+		panel.addEventListener('scroll', () => {
+			const scrollLeft = panel.scrollLeft;
+			const panelWidth = panel.clientWidth;
+			const activeIndex = Math.round(scrollLeft / panelWidth);
+
+			dots.forEach((dot, i) => {
+				if (i === activeIndex) {
+					dot.classList.replace('bg-zinc-300', 'bg-zinc-700');
+				} else {
+					dot.classList.replace('bg-zinc-700', 'bg-zinc-300');
+				}
+			});
+		}, { passive: true });
+	});
+</script>
