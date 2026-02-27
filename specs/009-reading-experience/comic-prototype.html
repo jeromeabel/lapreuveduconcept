@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Le Concept de la Preuve — UX Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #faf9f6;
+      --ink: #1a1a1a;
+      --muted: #999;
+      --accent: #c43b2a;
+      --panel-bg: #f0eeea;
+      --panel-border: #d4d0c8;
+      --font-mono: 'Inconsolata', monospace;
+      --font-display: 'DM Serif Display', serif;
+      --snap-transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-mono);
+      cursor: default;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Scroll container ─── */
+    .comic-wall {
+      height: 100vh;
+      width: 100vw;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scrollbar-width: none;
+    }
+    .comic-wall::-webkit-scrollbar { display: none; }
+
+    /* ─── Title screen ─── */
+    .title-screen {
+      height: 100vh;
+      scroll-snap-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 1.2rem;
+      opacity: 0;
+      animation: fadeIn 1.2s ease forwards;
+    }
+    .title-screen h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      letter-spacing: -0.02em;
+      text-align: center;
+      line-height: 1.15;
+    }
+    .title-screen .subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .title-screen .scroll-hint {
+      margin-top: 3rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+    .title-screen .scroll-hint span {
+      display: block;
+      margin-top: 0.4rem;
+      font-size: 1.2rem;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50%      { opacity: 1; }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(6px); }
+    }
+
+    /* ─── Comic beat (each strip) ─── */
+    .comic-beat {
+      height: 100vh;
+      width: 100%;
+      scroll-snap-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      /* entrance animation — starts hidden */
+      opacity: 0;
+      transform: translateY(40px);
+      filter: blur(4px);
+      transition: var(--snap-transition);
+    }
+    .comic-beat.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+
+    /* ─── Strip number badge ─── */
+    .beat-number {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    /* ─── Panel layout ─── */
+    .comic-content {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .panel {
+      width: clamp(160px, 22vw, 300px);
+      aspect-ratio: 3 / 4;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .panel:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    /* Decorative sketch lines inside panels */
+    .panel::before {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border: 1px dashed var(--panel-border);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+
+    .panel-label {
+      font-size: 0.8rem;
+      font-weight: 300;
+      color: var(--muted);
+      z-index: 1;
+    }
+
+    /* ─── Caption ─── */
+    .caption {
+      margin-top: 1.2rem;
+      font-family: var(--font-display);
+      font-size: clamp(0.95rem, 1.8vw, 1.3rem);
+      color: var(--ink);
+      text-align: center;
+    }
+    .caption .episode-id {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-right: 0.5rem;
+    }
+
+    /* ─── Progress bar ─── */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--accent);
+      width: 0%;
+      z-index: 100;
+      transition: width 0.2s ease-out;
+    }
+
+    /* ─── Navigation indicator ─── */
+    .nav-dots {
+      position: fixed;
+      right: 1.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+    .nav-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--panel-border);
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 0;
+    }
+    .nav-dot:hover {
+      background: var(--muted);
+      transform: scale(1.5);
+    }
+    .nav-dot.active {
+      background: var(--accent);
+      transform: scale(1.4);
+    }
+
+    /* ─── Tap zone indicators (flash on click) ─── */
+    .tap-flash {
+      position: fixed;
+      top: 0;
+      height: 100vh;
+      width: 50%;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0;
+    }
+    .tap-flash.left  { left: 0; }
+    .tap-flash.right { right: 0; }
+    .tap-flash.show {
+      animation: flashFade 0.3s ease-out;
+    }
+    @keyframes flashFade {
+      0%   { opacity: 0.06; background: var(--ink); }
+      100% { opacity: 0; }
+    }
+
+    /* ─── Keyboard shortcut hint ─── */
+    .shortcut-hint {
+      position: fixed;
+      bottom: 1.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      opacity: 0.6;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .shortcut-hint.hidden {
+      opacity: 0;
+    }
+
+    /* ─── Responsive: stack panels on small screens ─── */
+    @media (max-width: 600px) {
+      .comic-content {
+        flex-direction: column;
+        align-items: center;
+      }
+      .panel {
+        width: clamp(200px, 70vw, 320px);
+      }
+      .nav-dots { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Progress bar -->
+  <div class="progress-bar" id="progress"></div>
+
+  <!-- Tap zone flash overlays -->
+  <div class="tap-flash left" id="tapLeft"></div>
+  <div class="tap-flash right" id="tapRight"></div>
+
+  <!-- Navigation dots (generated by JS) -->
+  <nav class="nav-dots" id="navDots"></nav>
+
+  <!-- Shortcut hint -->
+  <div class="shortcut-hint" id="shortcutHint">↑ ↓ · ← → · espace · clic gauche / droit</div>
+
+  <!-- Main scroll container -->
+  <main class="comic-wall" id="scroller">
+
+    <!-- Title -->
+    <section class="title-screen" data-index="0">
+      <p class="subtitle">Prototype UX</p>
+      <h1>Le Concept<br>de la Preuve</h1>
+      <p class="subtitle">par Web Developer</p>
+      <div class="scroll-hint">
+        scroll ou clic pour commencer
+        <span>↓</span>
+      </div>
+    </section>
+
+    <!-- Strip 008 -->
+    <article class="comic-beat" data-index="1">
+      <div class="beat-number">Strip 008</div>
+      <div class="comic-content">
+        <div class="panel"><span class="panel-label">Planche 1</span></div>
+        <div class="panel"><span class="panel-label">Planche 2</span></div>
+      </div>
+      <p class="caption"><span class="episode-id">008</span>Oui maître</p>
+    </article>
+
+    <!-- Strip 007 -->
+    <article class="comic-beat" data-index="2">
+      <div class="beat-number">Strip 007</div>
+      <div class="comic-content">
+        <div class="panel"><span class="panel-label">Planche 1</span></div>
+        <div class="panel"><span class="panel-label">Planche 2</span></div>
+      </div>
+      <p class="caption"><span class="episode-id">007</span>Bon matos</p>
+    </article>
+
+    <!-- Strip 006 -->
+    <article class="comic-beat" data-index="3">
+      <div class="beat-number">Strip 006</div>
+      <div class="comic-content">
+        <div class="panel"><span class="panel-label">Planche 1</span></div>
+        <div class="panel"><span class="panel-label">Planche 2</span></div>
+        <div class="panel"><span class="panel-label">Planche 3</span></div>
+      </div>
+      <p class="caption"><span class="episode-id">006</span>L'interrogatoire</p>
+    </article>
+
+    <!-- Strip 005 -->
+    <article class="comic-beat" data-index="4">
+      <div class="beat-number">Strip 005</div>
+      <div class="comic-content">
+        <div class="panel"><span class="panel-label">Planche 1</span></div>
+        <div class="panel"><span class="panel-label">Planche 2</span></div>
+      </div>
+      <p class="caption"><span class="episode-id">005</span>Pas de bol</p>
+    </article>
+
+    <!-- Strip 004 -->
+    <article class="comic-beat" data-index="5">
+      <div class="beat-number">Strip 004</div>
+      <div class="comic-content">
+        <div class="panel"><span class="panel-label">Planche 1</span></div>
+        <div class="panel"><span class="panel-label">Planche 2</span></div>
+      </div>
+      <p class="caption"><span class="episode-id">004</span>La pièce à conviction</p>
+    </article>
+
+    <!-- Strip 003 -->
+    <article class="comic-beat" data-index="6">
+      <div class="beat-number">Strip 003</div>
+      <div class="comic-content">
+        <div class="panel"><span class="panel-label">Planche 1</span></div>
+        <div class="panel"><span class="panel-label">Planche 2</span></div>
+        <div class="panel"><span class="panel-label">Planche 3</span></div>
+      </div>
+      <p class="caption"><span class="episode-id">003</span>Premiers indices</p>
+    </article>
+
+    <!-- Strip 002 -->
+    <article class="comic-beat" data-index="7">
+      <div class="beat-number">Strip 002</div>
+      <div class="comic-content">
+        <div class="panel"><span class="panel-label">Planche 1</span></div>
+        <div class="panel"><span class="panel-label">Planche 2</span></div>
+      </div>
+      <p class="caption"><span class="episode-id">002</span>Le début</p>
+    </article>
+
+    <!-- Strip 001 -->
+    <article class="comic-beat" data-index="8">
+      <div class="beat-number">Strip 001</div>
+      <div class="comic-content">
+        <div class="panel"><span class="panel-label">Planche 1</span></div>
+        <div class="panel"><span class="panel-label">Planche 2</span></div>
+      </div>
+      <p class="caption"><span class="episode-id">001</span>Prologue</p>
+    </article>
+
+  </main>
+
+  <script>
+    // ─── State ───
+    const scroller = document.getElementById('scroller');
+    const sections = [...document.querySelectorAll('[data-index]')];
+    const beats = [...document.querySelectorAll('.comic-beat')];
+    const progressBar = document.getElementById('progress');
+    const navDotsContainer = document.getElementById('navDots');
+    const shortcutHint = document.getElementById('shortcutHint');
+    const tapLeft = document.getElementById('tapLeft');
+    const tapRight = document.getElementById('tapRight');
+
+    let currentIndex = 0;
+    let interactionCount = 0;
+
+    // ─── Build nav dots ───
+    sections.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'nav-dot';
+      dot.setAttribute('aria-label', `Section ${i}`);
+      dot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        scrollToIndex(i);
+      });
+      navDotsContainer.appendChild(dot);
+    });
+    const dots = [...navDotsContainer.querySelectorAll('.nav-dot')];
+
+    // ─── Scroll to section ───
+    const scrollToIndex = (index) => {
+      const clamped = Math.max(0, Math.min(index, sections.length - 1));
+      sections[clamped].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      currentIndex = clamped;
+      updateUI();
+    };
+
+    // ─── Update progress & dots ───
+    const updateUI = () => {
+      // Progress bar
+      const pct = (currentIndex / (sections.length - 1)) * 100;
+      progressBar.style.width = `${pct}%`;
+
+      // Dots
+      dots.forEach((d, i) => d.classList.toggle('active', i === currentIndex));
+
+      // Hide hint after a few interactions
+      interactionCount++;
+      if (interactionCount > 3) {
+        shortcutHint.classList.add('hidden');
+      }
+    };
+
+    // ─── Intersection Observer for reveal animation ───
+    const observerOpts = {
+      root: scroller,
+      threshold: 0.35,
+    };
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          // Sync currentIndex from scroll position
+          const idx = parseInt(entry.target.dataset.index, 10);
+          if (!isNaN(idx)) {
+            currentIndex = idx;
+            updateUI();
+          }
+        }
+      });
+    }, observerOpts);
+
+    sections.forEach((s) => observer.observe(s));
+
+    // ─── Keyboard navigation ───
+    document.addEventListener('keydown', (e) => {
+      const next = ['ArrowDown', 'ArrowRight', ' '];
+      const prev = ['ArrowUp', 'ArrowLeft'];
+
+      if (next.includes(e.key)) {
+        e.preventDefault();
+        scrollToIndex(currentIndex + 1);
+      } else if (prev.includes(e.key)) {
+        e.preventDefault();
+        scrollToIndex(currentIndex - 1);
+      }
+    });
+
+    // ─── Tap / click navigation with flash ───
+    const flash = (el) => {
+      el.classList.remove('show');
+      void el.offsetWidth; // reflow
+      el.classList.add('show');
+    };
+
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.nav-dots') || e.target.closest('a') || e.target.closest('button')) return;
+
+      const isRight = e.clientX > window.innerWidth / 2;
+      if (isRight) {
+        flash(tapRight);
+        scrollToIndex(currentIndex + 1);
+      } else {
+        flash(tapLeft);
+        scrollToIndex(currentIndex - 1);
+      }
+    });
+
+    // ─── Init ───
+    updateUI();
+    // Reveal title immediately
+    document.querySelector('.title-screen')?.classList.add('is-visible');
+  </script>
+
+</body>
+</html>
