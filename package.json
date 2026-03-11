@@ -13,14 +13,15 @@
     "new": "node scripts/new-comic.js"
   },
   "dependencies": {
-    "@astrojs/netlify": "^6.6.5",
+    "@astrojs/netlify": "^7.0.1",
     "@tailwindcss/vite": "^4.2.1",
-    "astro": "^5.18.1",
+    "astro": "^6.0.2",
     "astro-icon": "^1.1.5",
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
     "@iconify-json/carbon": "^1.2.19",
     "sharp": "^0.34.5"
-  }
+  },
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
 }
