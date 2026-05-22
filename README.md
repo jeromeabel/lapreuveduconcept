@@ -4,10 +4,10 @@ A minimal French comic blog
 
 ## Tech Stack
 
-- **[Astro v5](https://astro.build/)** — hybrid rendering (static pages + server API)
-- **[Astro DB](https://docs.astro.build/en/guides/astro-db/)** — libSQL/SQLite database for votes
+- **[Astro v5](https://astro.build/)** — static site (fully prerendered)
 - **[Tailwind CSS v4](https://tailwindcss.com/)** — via `@tailwindcss/vite` plugin
-- **[Netlify](https://www.netlify.com/)** — deployment adapter with SSR support
+- **[Netlify](https://www.netlify.com/)** — static hosting and CDN
+- **PHP + MySQL** — vote API on OVH shared hosting (`api.jeromeabel.net`)
 
 ## Getting Started
 
@@ -28,15 +28,13 @@ pnpm install
 pnpm dev
 ```
 
-Opens a local dev server at `http://localhost:4321`. The database is created and seeded automatically on first run.
+Opens a local dev server at `http://localhost:4321`. Vote requests hit the staging endpoint (`vote-staging.php`) which writes to a separate `votes_staging` table.
 
 ### Build
 
 ```bash
 pnpm build
 ```
-
-The build script sets `ASTRO_DATABASE_FILE` automatically for local builds. For production with a remote database, use `astro build --remote` instead.
 
 ### Preview
 
@@ -47,8 +45,8 @@ pnpm preview
 ### Image Scripts
 
 ```bash
-pnpm optimize-images <comicId>
-pnpm generate-cover <comicId>
+pnpm optimize <comicId>
+pnpm cover <comicId>
 ```
 
 Use these scripts to prepare optimized panel assets and the cover image for a comic.
@@ -56,7 +54,6 @@ Use these scripts to prepare optimized panel assets and the cover image for a co
 ## Project Structure
 
 ```
-├── db/
 ├── public/
 ├── src/
 │   ├── components/
@@ -65,12 +62,13 @@ Use these scripts to prepare optimized panel assets and the cover image for a co
 │   │   └── comics/            # Comic markdown files (frontmatter)
 │   ├── layouts/
 │   ├── pages/
-│   │   ├── api/
 │   │   ├── comics/
 │   │   │   └── [slug].astro   # Comic detail page (prerendered)
 │   │   └── index.astro        # Landing page (prerendered)
-│   └── styles/
-│       └── global.css         # Tailwind v4 + custom theme
+│   ├── styles/
+│   │   └── global.css         # Tailwind v4 + custom theme
+│   └── utils/
+│       └── voteConfig.ts      # Vote API URL by environment
 ├── astro.config.ts
 └── tsconfig.json
 ```
@@ -79,20 +77,26 @@ Use these scripts to prepare optimized panel assets and the cover image for a co
 
 ### Comics
 
-Comics are defined as markdown files in `src/data/comics/` with frontmatter (title, slug, panel images, speech bubble text). They are also seeded into the Astro DB `Comic` table for vote tracking.
+Comics are defined as markdown files in `src/data/comics/` with frontmatter (title, slug, panel images, speech bubble text).
 
 ### Voting System
 
-- Cookie-based visitor identification — a random ID is set on first vote
-- The visitor ID is SHA-256 hashed before storage in the database
-- A unique index on `[comicId, visitorHash]` enforces one vote per visitor per comic
-- `GET /api/vote?comicId=X` returns the current count and whether the visitor has voted
-- `POST /api/vote` with `{ comicId }` registers a new vote
+Votes are handled by a PHP file on OVH shared hosting — no serverless, no cold starts:
+
+```
+leconceptdelapreuve.jeromeabel.net (Netlify CDN — static)
+  └─ fetch() → api.jeromeabel.net/vote.php (OVH PHP + MySQL)
+```
+
+- Cookie-based visitor identification (`httpOnly`, `SameSite=None`, `domain=.jeromeabel.net`)
+- `GET /vote.php?comicIds[]=X&comicIds[]=Y` — returns counts + voted state for multiple comics
+- `POST /vote.php` with `{ comicId }` — toggles vote (insert or delete)
+- Composite unique index on `(comic_id, visitor_id)` enforces one vote per visitor per comic
+- `pnpm dev` hits `vote-staging.php` → `votes_staging` table (isolated from production)
 
 ### Rendering Strategy
 
-- **Static pages** (default): landing page and comic detail pages are prerendered at build time
-- **Server endpoint**: `/api/vote` runs on-demand via Netlify Functions
+Fully static — all pages are prerendered at build time. No Netlify Functions or SSR.
 
 ### Layout Tokens
 
@@ -104,13 +108,9 @@ Layout sizing values live in `src/utils/layoutTokens.ts` and are applied as CSS 
 
 ## Environment Variables
 
-See `.env.example` for all available variables:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `ASTRO_DATABASE_FILE` | For local build | Path to local SQLite file (set in build script) |
-| `ASTRO_DB_REMOTE_URL` | For production | Turso/libSQL connection string |
-| `ASTRO_DB_APP_TOKEN` | For production | Database auth token |
+| Variable | Description |
+|----------|-------------|
+| `PUBLIC_VOTE_API_URL` | Override the vote API URL (defaults to staging in dev, production in build) |
 
 ## License
 

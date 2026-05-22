@@ -43,8 +43,12 @@ The `specs/` folder contains specifications, plans, and design documents that gu
 - **When executing a plan**: treat the spec as the source of truth for requirements and acceptance criteria
 - Each iteration gets its own folder: `specs/<NNN>-<name>/` containing `plan.md` and any related docs
 
-## Planned Features
+## Voting System
 
-- **Astro DB** (`@astrojs/db`) for vote tracking (not yet added)
-- Content collections with `glob()` loader for comics
-- Vote API at `/api/vote` with cookie-based visitor ID
+Votes use a PHP + MySQL backend on OVH shared hosting — not Astro DB or Turso.
+
+- API: `https://api.jeromeabel.net/vote.php` (prod) / `vote-staging.php` (dev/preview)
+- URL selected in `src/utils/voteConfig.ts` via `PUBLIC_VOTE_API_URL` env var
+- Dev hits staging table (`votes_staging`), production hits `votes`
+- Cookie identity: `httpOnly`, `SameSite=None`, `domain=.jeromeabel.net`
+- Site is fully static — no `prerender = false`, no Netlify Functions
